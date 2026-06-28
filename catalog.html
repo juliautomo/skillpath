@@ -1379,10 +1379,6 @@ function renderGrid(courses) {
 function openModal(id) {
   const c = COURSES.find(x => x.id === id);
   if (!c) return;
-  if (c.enrolled) {
-    window.location.href = 'lesson.html?course=' + c.slug;
-    return;
-  }
   activeCourse = c;
 
   document.getElementById('modal-bc').textContent = c.title;
@@ -1592,7 +1588,6 @@ document.querySelectorAll('.filter-opt').forEach(opt => {
 
 function syncFilters() {
   filters.level  = [...document.querySelectorAll('.filter-opt.checked[data-filter="level"]')].map(o => o.dataset.val);
-  filters.status = [...document.querySelectorAll('.filter-opt.checked[data-filter="status"]')].map(o => o.dataset.val);
   filters.track  = [...document.querySelectorAll('.filter-opt.checked[data-filter="track"]')].map(o => o.dataset.val);
 }
 
@@ -1604,10 +1599,6 @@ function applyFilters() {
   let visible = COURSES.filter(c => {
     if (filters.track.length  && !filters.track.includes(c.track))   return false;
     if (filters.level.length  && !filters.level.includes(c.level))   return false;
-    if (filters.status.length) {
-      const st = c.enrolled ? 'enrolled' : 'not-enrolled';
-      if (!filters.status.includes(st)) return false;
-    }
     if (c.priceUsd > maxPrice) return false;
     if (search && !c.title.toLowerCase().includes(search) && !c.desc.toLowerCase().includes(search)) return false;
     return true;
@@ -1731,8 +1722,10 @@ applyFilters();
     function applyEnrollments(data) {
       if (!data || !data.courses) return;
       data.courses.forEach(function(ec) {
-        var course = courses.find(function(c) {
-          return c.id === ec.id || c.slug === ec.slug || c.slug === (ec.slug || '').replace(/-/g,'_');
+        var course = COURSES.find(function(c) {
+          return c.id === ec.id || c.slug === ec.slug ||
+            c.slug === (ec.slug || '').replace(/-/g,'_') ||
+            (c.slug || '').replace(/-/g,'_') === (ec.slug || '');
         });
         if (course) {
           course.enrolled = true;
@@ -1741,6 +1734,17 @@ applyFilters();
         }
       });
       applyFilters();
+      // Update modal footer if it's currently open for an enrolled course
+      if (typeof activeCourse !== 'undefined' && activeCourse) {
+        var updated = COURSES.find(function(c){ return c.id === activeCourse.id; });
+        if (updated && updated.enrolled) {
+          activeCourse = updated;
+          var footerEl = document.getElementById('modal-footer');
+          if (footerEl) {
+            footerEl.innerHTML = '<div class="modal-footer-btns"><button class="btn-modal-continue" onclick="window.location.href=\'lesson.html?course=\' + activeCourse.slug">Continue course →</button></div>';
+          }
+        }
+      }
     }
   }
 })();

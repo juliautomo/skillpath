@@ -706,9 +706,8 @@
       .content-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 900px) {
-      :root { --sb-width: 0px; }
-      .sidebar { transform: translateX(-240px); transition: transform .25s ease; }
-      .sidebar.open { transform: translateX(0); --sb-width: 240px; }
+      .sidebar { width: 240px; transform: translateX(-240px); transition: transform .25s ease; }
+      .sidebar.open { transform: translateX(0); }
       .main { margin-left: 0; }
       .content { padding: 20px; }
       .welcome { grid-template-columns: 1fr; }

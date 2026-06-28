@@ -838,9 +838,10 @@
     </a>
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
-      <li><a href="catalog.html" class="active">Courses</a></li>
-      <li id='nav-assessments-catalog' style='display:none'><a href='assessments.html'>Assessments</a></li>
-      <li id="nav-dashboard-link" style="display:none"><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="catalog.html" class="active nav-active">Courses</a></li>
+      <li><a href="assessments.html">Assessments</a></li>
+      <li><a href="index.html#how-it-works">How it works</a></li>
+      <li><a href="index.html#pricing">Pricing</a></li>
     </ul>
     <div class="nav-right">
       <div id="nav-auth-buttons">
@@ -1741,4 +1742,4 @@ applyFilters();
 
     // Sync enrollments from backend
     fetch('https://skillpath-production-4f85.up.railway.app/api/enrollments', {
-      headers: { Author<!-- deployed 2026-06-28T11:46:10Z -->
+      headers: { Author

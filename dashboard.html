@@ -1026,16 +1026,17 @@
   // Sync payments silently in background so page renders immediately
   syncPayments();
 
-  // Load enrollments (with 20s timeout in case Railway is sleeping)
+  // Load enrollments (with 15s timeout for Railway cold starts)
   var ctrl = new AbortController();
   var fetchTimer = setTimeout(function() {
     ctrl.abort();
-    var errMsg = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">Server is waking up — <a href="" style="color:var(--accent)" onclick="location.reload();return false;">refresh in 30s</a></div>';
-    var al = document.getElementById('assessment-list'); if (al) al.innerHTML = errMsg;
-    var rl = document.getElementById('rec-list');        if (rl) rl.innerHTML = errMsg;
-    var cl = document.querySelector('.enrolled-list');   if (cl) cl.innerHTML = errMsg;
-    var sw = document.getElementById('welcome-sub');     if (sw) sw.textContent = 'Server is waking up — refresh in 30 seconds.';
-  }, 20000);
+    var wakeMsg = 'Server is waking up — <a href="" style="color:var(--accent)" onclick="location.reload();return false;">refresh in 30s</a>';
+    var errDiv = function(msg){ return '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">' + msg + '</div>'; };
+    var al = document.getElementById('assessment-list'); if (al) al.innerHTML = errDiv(wakeMsg);
+    var rl = document.getElementById('rec-list');        if (rl) rl.innerHTML = errDiv(wakeMsg);
+    var cl = document.querySelector('.enrolled-list');   if (cl) cl.innerHTML = errDiv(wakeMsg);
+    var sw = document.getElementById('welcome-sub');     if (sw) sw.textContent = 'Server is waking up — please refresh in 30 seconds.';
+  }, 15000);
 
   fetch(API + '/api/enrollments', { headers: { Authorization: 'Bearer ' + token }, signal: ctrl.signal })
     .then(function(r) { clearTimeout(fetchTimer); return r.json(); })
@@ -1238,11 +1239,11 @@
 
     }).catch(function(e) {
       clearTimeout(fetchTimer);
-      if (e.name === 'AbortError') return; // already handled by timeout
-      var errMsg = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">Could not load data. <a href="" style="color:var(--accent)" onclick="location.reload();return false;">Retry</a></div>';
-      var al = document.getElementById('assessment-list'); if (al) al.innerHTML = errMsg;
-      var rl = document.getElementById('rec-list');        if (rl) rl.innerHTML = errMsg;
-      var cl = document.querySelector('.enrolled-list');   if (cl) cl.innerHTML = errMsg;
+      if (e && e.name === 'AbortError') return; // timeout already handled
+      var errDiv = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">Could not load data. <a href="" style="color:var(--accent)" onclick="location.reload();return false;">Retry</a></div>';
+      var al = document.getElementById('assessment-list'); if (al) al.innerHTML = errDiv;
+      var rl = document.getElementById('rec-list');        if (rl) rl.innerHTML = errDiv;
+      var cl = document.querySelector('.enrolled-list');   if (cl) cl.innerHTML = errDiv;
     });
 
   function markNextLesson(courseId, totalLessons, e) {
@@ -1250,4 +1251,51 @@
     var API = 'https://skillpath-production-4f85.up.railway.app';
     var token = localStorage.getItem('sp_token');
     var btn = document.getElementById('btn-' + courseId);
-    if (btn) { btn.disabled = t
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    fetch(API + '/api/progress/' + courseId, { headers: { Authorization: 'Bearer ' + token } })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var completed = data.completed_lessons || [];
+        var nextIndex = 0;
+        while (completed.indexOf(nextIndex) !== -1) nextIndex++;
+        if (nextIndex >= totalLessons) { if (btn) btn.textContent = 'All done!'; return; }
+        return fetch(API + '/api/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ course_id: courseId, lesson_index: nextIndex })
+        }).then(function(r) { return r.json(); })
+          .then(function(res) {
+            var newPct = res.progress_pct || 0;
+            var newDone = res.completed_lessons || (completed.length + 1);
+            var pctEl = document.getElementById('pct-' + courseId);
+            var lessonsEl = document.getElementById('lessons-' + courseId);
+            var statusEl = document.getElementById('status-' + courseId);
+            if (pctEl) pctEl.textContent = newPct + '%';
+            if (lessonsEl) lessonsEl.textContent = newDone + '/' + totalLessons;
+            var newStatus = newPct >= 100 ? 'Complete' : 'In progress';
+            var newColor = newPct >= 100 ? '#16a34a' : '#2563eb';
+            if (statusEl) { statusEl.textContent = newStatus; statusEl.style.color = newColor; }
+            var lessonsCard = document.getElementById('count-lessons');
+            if (lessonsCard) lessonsCard.textContent = parseInt(lessonsCard.textContent||0) + 1;
+            if (newPct >= 100) {
+              if (btn) btn.remove();
+              var certsEl = document.getElementById('count-certs');
+              if (certsEl) certsEl.textContent = parseInt(certsEl.textContent||0) + 1;
+            } else {
+              if (btn) { btn.disabled = false; btn.textContent = '+ Mark lesson done'; }
+            }
+          });
+      })
+      .catch(function() { if (btn) { btn.disabled = false; btn.textContent = '+ Mark lesson done'; } });
+  }
+
+  function fmtDate(str) {
+    if (!str) return '';
+    var d = new Date(str);
+    return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+  }
+})();
+</script>
+
+</body>
+</html>

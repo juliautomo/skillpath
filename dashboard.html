@@ -854,61 +854,7 @@
           </div>
           <div class="card-body">
             <div class="enrolled-list" role="list">
-
-              <div class="enrolled-item" role="listitem" onclick="window.location.href='catalog.html'" tabindex="0">
-                <div class="enrolled-icon bg-teal" aria-hidden="true">📊</div>
-                <div class="enrolled-info">
-                  <div class="enrolled-title">Excel &amp; Google Sheets Mastery</div>
-                  <div class="enrolled-meta">Course 01 · 6 weeks · 24 lessons</div>
-                  <div class="progress-bar-wrap">
-                    <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="100% complete">
-                      <div class="progress-fill pf-teal" style="width:0%" data-width="100%"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="enrolled-right">
-                  <div class="enrolled-pct">100%</div>
-                  <div class="enrolled-lessons">24 / 24</div>
-                  <div><span class="enrolled-status status-done">✓ Complete</span></div>
-                </div>
-              </div>
-
-              <div class="enrolled-item" role="listitem" onclick="window.location.href='catalog.html'" tabindex="0">
-                <div class="enrolled-icon bg-gold" aria-hidden="true">🗄️</div>
-                <div class="enrolled-info">
-                  <div class="enrolled-title">SQL for Data Analysis</div>
-                  <div class="enrolled-meta">Course 02 · 8 weeks · 32 lessons</div>
-                  <div class="progress-bar-wrap">
-                    <div class="progress-bar" role="progressbar" aria-valuenow="44" aria-valuemin="0" aria-valuemax="100" aria-label="44% complete">
-                      <div class="progress-fill pf-gold" style="width:0%" data-width="44%"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="enrolled-right">
-                  <div class="enrolled-pct">44%</div>
-                  <div class="enrolled-lessons">14 / 32</div>
-                  <div><span class="enrolled-status status-active">● In progress</span></div>
-                </div>
-              </div>
-
-              <div class="enrolled-item" role="listitem" onclick="window.location.href='catalog.html'" tabindex="0">
-                <div class="enrolled-icon bg-navy" aria-hidden="true">🐍</div>
-                <div class="enrolled-info">
-                  <div class="enrolled-title">Python for Data (pandas)</div>
-                  <div class="enrolled-meta">Course 03 · 10 weeks · 38 lessons</div>
-                  <div class="progress-bar-wrap">
-                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Not started">
-                      <div class="progress-fill pf-navy" style="width:0%" data-width="0%"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="enrolled-right">
-                  <div class="enrolled-pct">0%</div>
-                  <div class="enrolled-lessons">0 / 38</div>
-                  <div><span class="enrolled-status status-notstart">Not started</span></div>
-                </div>
-              </div>
-
+              <div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">Loading…</div>
             </div>
           </div>
         </div>
@@ -924,61 +870,7 @@
           </div>
           <div class="card-body">
             <div class="activity-list" role="log" aria-label="Recent learning activity">
-
-              <div class="activity-item">
-                <div class="activity-dot-wrap">
-                  <div class="activity-dot ad-gold"></div>
-                  <div class="activity-line"></div>
-                </div>
-                <div class="activity-content">
-                  <div class="activity-title">Completed <strong>Lesson 14 — Window Functions</strong></div>
-                  <div class="activity-time">Today · 09:14</div>
-                </div>
-              </div>
-
-              <div class="activity-item">
-                <div class="activity-dot-wrap">
-                  <div class="activity-dot ad-gold"></div>
-                  <div class="activity-line"></div>
-                </div>
-                <div class="activity-content">
-                  <div class="activity-title">Completed <strong>Lesson 13 — CTEs & Subqueries</strong></div>
-                  <div class="activity-time">Yesterday · 21:32</div>
-                </div>
-              </div>
-
-              <div class="activity-item">
-                <div class="activity-dot-wrap">
-                  <div class="activity-dot ad-blue"></div>
-                  <div class="activity-line"></div>
-                </div>
-                <div class="activity-content">
-                  <div class="activity-title">Submitted <strong>Project 2 — Sales Dashboard</strong> for review</div>
-                  <div class="activity-time">2 days ago · 18:05</div>
-                </div>
-              </div>
-
-              <div class="activity-item">
-                <div class="activity-dot-wrap">
-                  <div class="activity-dot ad-green"></div>
-                  <div class="activity-line"></div>
-                </div>
-                <div class="activity-content">
-                  <div class="activity-title">Earned <strong>Excel &amp; Google Sheets</strong> certificate 🎉</div>
-                  <div class="activity-time">4 days ago · 14:22</div>
-                </div>
-              </div>
-
-              <div class="activity-item">
-                <div class="activity-dot-wrap">
-                  <div class="activity-dot ad-gray"></div>
-                </div>
-                <div class="activity-content">
-                  <div class="activity-title">Enrolled in <strong>SQL for Data Analysis</strong></div>
-                  <div class="activity-time">6 days ago · 10:00</div>
-                </div>
-              </div>
-
+              <div style="padding:16px;color:var(--ink3);font-size:13px;text-align:center">Loading…</div>
             </div>
           </div>
         </div>
@@ -1134,9 +1026,19 @@
   // Sync payments silently in background so page renders immediately
   syncPayments();
 
-  // Load enrollments
-  fetch(API + '/api/enrollments', { headers: { Authorization: 'Bearer ' + token } })
-    .then(function(r) { return r.json(); })
+  // Load enrollments (with 20s timeout in case Railway is sleeping)
+  var ctrl = new AbortController();
+  var fetchTimer = setTimeout(function() {
+    ctrl.abort();
+    var errMsg = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">Server is waking up — <a href="" style="color:var(--accent)" onclick="location.reload();return false;">refresh in 30s</a></div>';
+    var al = document.getElementById('assessment-list'); if (al) al.innerHTML = errMsg;
+    var rl = document.getElementById('rec-list');        if (rl) rl.innerHTML = errMsg;
+    var cl = document.querySelector('.enrolled-list');   if (cl) cl.innerHTML = errMsg;
+    var sw = document.getElementById('welcome-sub');     if (sw) sw.textContent = 'Server is waking up — refresh in 30 seconds.';
+  }, 20000);
+
+  fetch(API + '/api/enrollments', { headers: { Authorization: 'Bearer ' + token }, signal: ctrl.signal })
+    .then(function(r) { clearTimeout(fetchTimer); return r.json(); })
     .then(function(data) {
       var courses = data.courses || [];
 
@@ -1334,7 +1236,14 @@
         sbProgress.innerHTML = sbHtml;
       }
 
-    }).catch(function(e) { console.log('Dashboard error:', e); });
+    }).catch(function(e) {
+      clearTimeout(fetchTimer);
+      if (e.name === 'AbortError') return; // already handled by timeout
+      var errMsg = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">Could not load data. <a href="" style="color:var(--accent)" onclick="location.reload();return false;">Retry</a></div>';
+      var al = document.getElementById('assessment-list'); if (al) al.innerHTML = errMsg;
+      var rl = document.getElementById('rec-list');        if (rl) rl.innerHTML = errMsg;
+      var cl = document.querySelector('.enrolled-list');   if (cl) cl.innerHTML = errMsg;
+    });
 
   function markNextLesson(courseId, totalLessons, e) {
     e.stopPropagation();

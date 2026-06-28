@@ -839,7 +839,7 @@
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="catalog.html" class="active nav-active">Courses</a></li>
-      <li id="nav-assess-li" style="display:none"><a href="assessments.html">Assessments</a></li>
+      
       <li><a href="index.html#how-it-works">How it works</a></li>
       <li><a href="index.html#pricing">Pricing</a></li>
     </ul>
@@ -1683,7 +1683,7 @@ applyFilters();
   var token = localStorage.getItem('sp_token');
   var user = JSON.parse(localStorage.getItem('sp_user') || 'null');
 
-  // Show/hide assessments and dashboard
+  // Show logged-in nav state
   if (token && user) {
 
     // Update nav buttons to greeting + logout
@@ -1691,9 +1691,9 @@ applyFilters();
     if (authDiv) {
       var firstName = user.name.split(' ')[0];
       authDiv.innerHTML =
-        '<span style="font-size:14px;color:var(--ink2)">Hi, ' + firstName + ' 👋</span>' +
-        '<button class="nav-btn-ghost" onclick="window.location.href=\'dashboard.html\'">Dashboard</button>' +
-        '<button class="nav-btn-primary" onclick="localStorage.removeItem(\'sp_token\');localStorage.removeItem(\'sp_user\');localStorage.removeItem(\'sp_enrollments\');localStorage.removeItem(\'sp_enrollments_ts\');location.reload()">Log out</button>';
+        '<span style="font-size:14px;color:#4A4A4A">Hi, ' + firstName + ' 👋</span>' +
+        '<button style="font-size:14px;font-weight:400;color:#4A4A4A;padding:7px 14px;border-radius:7px;background:none;border:1px solid transparent;cursor:pointer" onclick="window.location.href=\'dashboard.html\'">Dashboard</button>' +
+        '<button style="font-size:14px;font-weight:500;background:#0D1B2A;color:#fff;padding:8px 18px;border-radius:7px;border:none;cursor:pointer" onclick="localStorage.removeItem(\'sp_token\');localStorage.removeItem(\'sp_user\');localStorage.removeItem(\'sp_enrollments\');localStorage.removeItem(\'sp_enrollments_ts\');location.reload()">Log out</button>';
     }
 
     // Sync enrollments — use localStorage cache for instant display, refresh in bg

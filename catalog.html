@@ -839,7 +839,7 @@
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="catalog.html" class="active nav-active">Courses</a></li>
-      <li><a href="assessments.html">Assessments</a></li>
+      <li id="nav-assess-li" style="display:none"><a href="assessments.html">Assessments</a></li>
       <li><a href="index.html#how-it-works">How it works</a></li>
       <li><a href="index.html#pricing">Pricing</a></li>
     </ul>
@@ -1685,6 +1685,7 @@ applyFilters();
   if (token && user) {
     // Logged in - show dashboard link and user pill
     if (dashLink) dashLink.style.display = '';
+    var assessLi = document.getElementById('nav-assess-li'); if (assessLi) assessLi.style.display = '';
     if (authBtns) {
       var ini = user.name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
       authBtns.innerHTML = '<div style="display:flex;align-items:center;gap:8px;background:#f5f5f5;border:1px solid #ddd;border-radius:999px;padding:4px 14px 4px 6px;font-size:13px"><div style="width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">'+ini+'</div><span>'+user.name.split(' ')[0]+'</span></div><button onclick="localStorage.removeItem('sp_token');localStorage.removeItem('sp_user');location.reload();" style="font-size:13px;background:none;border:1px solid #ddd;border-radius:8px;padding:6px 13px;cursor:pointer">Log out</button>';

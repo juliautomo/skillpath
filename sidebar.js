@@ -62,68 +62,21 @@
 
     // User footer
     '<div class="sb-footer">' +
-      '<div class="sb-user" id="sb-user-btn">' +
+      '<div class="sb-user" id="sb-user-btn" style="position:relative">' +
         '<div class="sb-avatar" id="sb-avatar">?</div>' +
-        '<div>' +
+        '<div style="flex:1;min-width:0">' +
           '<div class="sb-user-name" id="sb-name">Loading...</div>' +
           '<div class="sb-user-role">Student · Data track</div>' +
         '</div>' +
+        '<svg id="sb-chevron" viewBox="0 0 16 16" fill="none" style="width:14px;height:14px;flex-shrink:0;opacity:.5;transition:transform .2s"><path d="M5 7l3-3 3 3M5 10l3 3 3-3" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
       '</div>' +
-    '</div>' +
-
-    '</aside>';
-
-  // Inject into #sidebar-root if present, otherwise prepend to body
-  var root = document.getElementById('sidebar-root');
-  if (root) {
-    root.innerHTML = html;
-  } else {
-    document.body.insertAdjacentHTML('afterbegin', html);
-  }
-
-  // Populate user info from localStorage
-  try {
-    var user = JSON.parse(localStorage.getItem('sp_user') || 'null');
-    if (user && user.name) {
-      var initials = user.name.split(' ').map(function (w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
-      var avatarEl = document.getElementById('sb-avatar');
-      var nameEl   = document.getElementById('sb-name');
-      var savedAvatar = localStorage.getItem('sp_avatar');
-      if (avatarEl) {
-        if (savedAvatar) {
-          avatarEl.textContent = '';
-          avatarEl.style.backgroundImage = 'url(' + savedAvatar + ')';
-          avatarEl.style.backgroundSize = 'cover';
-          avatarEl.style.backgroundPosition = 'center';
-        } else {
-          avatarEl.textContent = initials;
-        }
-      }
-      if (nameEl) nameEl.textContent = user.name.split(' ')[0];
-    }
-  } catch (e) {}
-
-  // Logout on user footer click
-  var userBtn = document.getElementById('sb-user-btn');
-  if (userBtn) {
-    userBtn.style.cursor = 'pointer';
-    userBtn.addEventListener('click', function () {
-      if (confirm('Log out?')) {
-        localStorage.removeItem('sp_token');
-        localStorage.removeItem('sp_user');
-        window.location.href = 'index.html';
-      }
-    });
-  }
-
-  // Mobile menu toggle support (hamburger button with id="menu-btn")
-  document.addEventListener('DOMContentLoaded', function () {
-    var menuBtn = document.getElementById('menu-btn');
-    var sidebar = document.getElementById('sidebar');
-    if (menuBtn && sidebar) {
-      menuBtn.addEventListener('click', function () {
-        sidebar.classList.toggle('open');
-      });
-    }
-  });
-})();
+      '<div id="sb-user-menu" style="display:none;position:absolute;bottom:70px;left:12px;right:12px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:4px;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.4)">' +
+        '<a href="profile.html" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.85);font-size:13px;text-decoration:none;transition:background .15s" onmouseover="this.style.background=\'rgba(255,255,255,.07)\'" onmouseout="this.style.background=\'\'">' +
+          '<svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>' +
+          'Profile' +
+        '</a>' +
+        '<a href="settings.html" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.85);font-size:13px;text-decoration:none;transition:background .15s" onmouseover="this.style.background=\'rgba(255,255,255,.07)\'" onmouseout="this.style.background=\'\'">' +
+          '<svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>' +
+          'Settings' +
+        '</a>' +
+        '<div style="height:1px;background:rgba(255,255,25

@@ -1019,35 +1019,8 @@
             <a href="assessments.html" class="card-action">View all</a>
           </div>
           <div class="card-body">
-            <div class="assessment-list" role="list">
-
-              <div class="assessment-item" role="listitem" onclick="window.location.href='assessments.html'">
-                <div class="assessment-icon bg-gold" aria-hidden="true">🗄️</div>
-                <div class="assessment-info">
-                  <div class="assessment-title">SQL Sales Analysis Project</div>
-                  <div class="assessment-course">SQL for Data Analysis · Project 3</div>
-                </div>
-                <span class="assessment-status as-pending">Pending</span>
-              </div>
-
-              <div class="assessment-item" role="listitem" onclick="window.location.href='assessments.html'">
-                <div class="assessment-icon bg-gold" aria-hidden="true">📊</div>
-                <div class="assessment-info">
-                  <div class="assessment-title">Excel Dashboard Capstone</div>
-                  <div class="assessment-course">Excel &amp; Sheets · Project 5</div>
-                </div>
-                <span class="assessment-status as-submitted">Submitted</span>
-              </div>
-
-              <div class="assessment-item" role="listitem">
-                <div class="assessment-icon bg-navy" aria-hidden="true">🐍</div>
-                <div class="assessment-info">
-                  <div class="assessment-title">Pandas EDA Capstone</div>
-                  <div class="assessment-course">Python for Data · Project 1</div>
-                </div>
-                <span class="assessment-status as-locked">Locked</span>
-              </div>
-
+            <div class="assessment-list" id="assessment-list" role="list">
+              <div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">Loading…</div>
             </div>
           </div>
         </div>
@@ -1061,26 +1034,8 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="rec-list" role="list">
-
-              <div class="rec-item" role="listitem" onclick="window.location.href='catalog.html'" tabindex="0">
-                <div class="rec-icon bg-blue" aria-hidden="true">📈</div>
-                <div class="rec-info">
-                  <div class="rec-title">Data Visualization &amp; Dashboards</div>
-                  <div class="rec-meta">Course 04 · 8 weeks · 30 lessons</div>
-                </div>
-                <div class="rec-price">$79</div>
-              </div>
-
-              <div class="rec-item" role="listitem" onclick="window.location.href='catalog.html'" tabindex="0">
-                <div class="rec-icon bg-teal" aria-hidden="true">🔢</div>
-                <div class="rec-info">
-                  <div class="rec-title">Statistics for Data Analysis</div>
-                  <div class="rec-meta">Coming soon · Notify me</div>
-                </div>
-                <div class="rec-price" style="color:var(--ink3);font-size:11px">Soon</div>
-              </div>
-
+            <div class="rec-list" id="rec-list" role="list">
+              <div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">Loading…</div>
             </div>
           </div>
         </div>
@@ -1172,7 +1127,13 @@
     if (sbRoleEl) sbRoleEl.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
   }
 
-  if (!token) return;
+  if (!token) {
+    var al = document.getElementById('assessment-list');
+    var rl = document.getElementById('rec-list');
+    if (al) al.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px"><a href="catalog.html" style="color:var(--accent)">Log in</a> to see your assessments.</div>';
+    if (rl) rl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px"><a href="catalog.html" style="color:var(--accent)">Browse courses →</a></div>';
+    return;
+  }
 
   // Sync payments silently in background so page renders immediately
   syncPayments();
@@ -1294,6 +1255,71 @@
         }
       }
 
+      // ── Assessments (dynamic by enrolled courses) ────
+      var ASSESS_MAP = {
+        'excel-google-sheets': { title: 'Excel Dashboard Capstone',       sub: 'Excel & Google Sheets · Project 5', icon: '📊', bg: 'bg-teal' },
+        'sql-data-analysis':   { title: 'SQL Sales Analysis Project',     sub: 'SQL for Data Analysis · Project 3', icon: '🗄️', bg: 'bg-gold' },
+        'python-for-data':     { title: 'Pandas EDA Capstone',            sub: 'Python for Data · Project 1',       icon: '🐍', bg: 'bg-navy' },
+        'data-visualization':  { title: 'Data Viz Dashboard Capstone',    sub: 'Data Visualization · Project 6',    icon: '📈', bg: 'bg-blue' },
+      };
+
+      var assessList = document.getElementById('assessment-list');
+      if (assessList) {
+        if (courses.length === 0) {
+          assessList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">Enroll in a course to unlock assessments.</div>';
+        } else {
+          var aHtml = '';
+          courses.forEach(function(c) {
+            var a = ASSESS_MAP[c.slug]; if (!a) return;
+            var pct = c.progress_pct || 0;
+            var statusClass = pct >= 100 ? 'as-submitted' : pct > 0 ? 'as-pending' : 'as-locked';
+            var statusLabel = pct >= 100 ? 'Submitted' : pct > 0 ? 'Pending' : 'Not started';
+            aHtml += '<div class="assessment-item" role="listitem" onclick="window.location.href=\'assessments.html\'" style="cursor:pointer">' +
+              '<div class="assessment-icon ' + a.bg + '" aria-hidden="true">' + a.icon + '</div>' +
+              '<div class="assessment-info">' +
+                '<div class="assessment-title">' + a.title + '</div>' +
+                '<div class="assessment-course">' + a.sub + '</div>' +
+              '</div>' +
+              '<span class="assessment-status ' + statusClass + '">' + statusLabel + '</span>' +
+            '</div>';
+          });
+          assessList.innerHTML = aHtml || '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">No assessments yet.</div>';
+        }
+      }
+
+      // ── Recommended next (not-yet-enrolled courses) ──
+      var ALL_CATALOG = [
+        { slug: 'excel-google-sheets', title: 'Excel & Google Sheets Mastery',    meta: 'Course 01 · 6 weeks · 24 lessons',  price: '$49',  icon: '📊', bg: 'bg-teal', comingSoon: false },
+        { slug: 'sql-data-analysis',   title: 'SQL for Data Analysis',            meta: 'Course 02 · 8 weeks · 32 lessons',  price: '$69',  icon: '🗄️', bg: 'bg-gold', comingSoon: true  },
+        { slug: 'python-for-data',     title: 'Python for Data (pandas)',          meta: 'Course 03 · 10 weeks · 38 lessons', price: '$89',  icon: '🐍', bg: 'bg-navy', comingSoon: true  },
+        { slug: 'data-visualization',  title: 'Data Visualization & Dashboards',  meta: 'Course 04 · 8 weeks · 30 lessons',  price: '$79',  icon: '📈', bg: 'bg-blue', comingSoon: true  },
+      ];
+
+      var enrolledSlugs = courses.map(function(c){ return c.slug; });
+      var recommended = ALL_CATALOG.filter(function(c){ return enrolledSlugs.indexOf(c.slug) === -1; });
+
+      var recList = document.getElementById('rec-list');
+      if (recList) {
+        if (recommended.length === 0) {
+          recList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">You\'re enrolled in all available courses! 🎉</div>';
+        } else {
+          var rHtml = '';
+          recommended.slice(0, 3).forEach(function(c) {
+            rHtml += '<div class="rec-item" role="listitem" onclick="window.location.href=\'catalog.html\'" tabindex="0">' +
+              '<div class="rec-icon ' + c.bg + '" aria-hidden="true">' + c.icon + '</div>' +
+              '<div class="rec-info">' +
+                '<div class="rec-title">' + c.title + '</div>' +
+                '<div class="rec-meta">' + c.meta + '</div>' +
+              '</div>' +
+              (c.comingSoon
+                ? '<div class="rec-price" style="color:var(--ink3);font-size:11px">Soon</div>'
+                : '<div class="rec-price">' + c.price + '</div>') +
+            '</div>';
+          });
+          recList.innerHTML = rHtml;
+        }
+      }
+
       // ── Sidebar progress ─────────────────────────────
       var sbProgress = document.querySelector('.sb-progress-card');
       if (sbProgress) {
@@ -1312,54 +1338,4 @@
 
   function markNextLesson(courseId, totalLessons, e) {
     e.stopPropagation();
-    var API = 'https://skillpath-production-4f85.up.railway.app';
-    var token = localStorage.getItem('sp_token');
-    var btn = document.getElementById('btn-' + courseId);
-    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
-    fetch(API + '/api/progress/' + courseId, { headers: { Authorization: 'Bearer ' + token } })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var completed = data.completed_lessons || [];
-        var nextIndex = 0;
-        while (completed.indexOf(nextIndex) !== -1) nextIndex++;
-        if (nextIndex >= totalLessons) { if (btn) btn.textContent = 'All done!'; return; }
-        return fetch(API + '/api/progress', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ course_id: courseId, lesson_index: nextIndex })
-        }).then(function(r) { return r.json(); })
-          .then(function(res) {
-            var newPct = res.progress_pct || 0;
-            var newDone = res.completed_lessons || (completed.length + 1);
-            var pctEl = document.getElementById('pct-' + courseId);
-            var lessonsEl = document.getElementById('lessons-' + courseId);
-            var statusEl = document.getElementById('status-' + courseId);
-            if (pctEl) pctEl.textContent = newPct + '%';
-            if (lessonsEl) lessonsEl.textContent = newDone + '/' + totalLessons;
-            var newStatus = newPct >= 100 ? 'Complete' : 'In progress';
-            var newColor = newPct >= 100 ? '#16a34a' : '#2563eb';
-            if (statusEl) { statusEl.textContent = newStatus; statusEl.style.color = newColor; }
-            var lessonsCard = document.getElementById('count-lessons');
-            if (lessonsCard) lessonsCard.textContent = parseInt(lessonsCard.textContent||0) + 1;
-            if (newPct >= 100) {
-              if (btn) btn.remove();
-              var certsEl = document.getElementById('count-certs');
-              if (certsEl) certsEl.textContent = parseInt(certsEl.textContent||0) + 1;
-            } else {
-              if (btn) { btn.disabled = false; btn.textContent = '+ Mark lesson done'; }
-            }
-          });
-      })
-      .catch(function() { if (btn) { btn.disabled = false; btn.textContent = '+ Mark lesson done'; } });
-  }
-
-  function fmtDate(str) {
-    if (!str) return '';
-    var d = new Date(str);
-    return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
-  }
-})();
-</script>
-
-</body>
-</html>
+    var API = 'https://skillpath-production-4f85.up.railway.app

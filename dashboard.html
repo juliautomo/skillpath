@@ -1041,6 +1041,8 @@
   fetch(API + '/api/enrollments', { headers: { Authorization: 'Bearer ' + token }, signal: ctrl.signal })
     .then(function(r) { clearTimeout(fetchTimer); return r.json(); })
     .then(function(data) {
+      // Cache enrollment data for instant lesson page loads
+      try { localStorage.setItem('sp_enrollments', JSON.stringify(data)); localStorage.setItem('sp_enrollments_ts', String(Date.now())); } catch(e) {}
       var courses = data.courses || [];
 
       // ── Welcome section ──────────────────────────────

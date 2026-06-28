@@ -767,6 +767,212 @@ const CURRICULUM = {
           },
         ]
       },
+
+      {
+        title: 'Module 6 — Power Query & Data Automation',
+        lessons: [
+          {
+            title: 'Introducing Power Query',
+            tagline: 'What Power Query is, when to use it, and how to open it in Excel.',
+            duration: '4 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Power Query is a transformation engine, not a formula', b: 'Power Query handles importing, cleaning, and shaping data from any source — CSV, databases, web, APIs. Every action is recorded as a named step in Applied Steps, not buried in cells.' },
+              { h: 'Applied Steps: every transformation is auditable and editable', b: 'Each click in the Editor adds a step to the Applied Steps panel. You can edit, delete, or reorder any step at any time. This is the key difference from manual formulas.' },
+              { h: 'Close & Load outputs a clean Table without touching your source', b: 'Power Query never modifies the original file. Transformation logic lives in the Query — your raw data stays intact. All cleaning happens in the engine.' },
+              { h: 'One click of Refresh re-runs every transformation on new data', b: 'Add new rows to the source, click Refresh — every Applied Step runs again automatically. No copy-paste. No manual updates. Set it up once, run forever.' },
+            ],
+            tip: 'Never edit data directly in the sheet that Power Query loaded into — your changes will be overwritten on the next Refresh. All edits must happen inside the Query Editor.',
+          },
+          {
+            title: 'Transforming Data in the Power Query Editor',
+            tagline: 'Automatically clean dirty data: fix types, remove duplicates, split columns, and fill blanks.',
+            duration: '5 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Set explicit data types on every column — always', b: 'Any column showing the ABC123 icon has type "Any" — Power Query does not know what is in it. Always set an explicit type. This prevents hard-to-debug errors when new data arrives.' },
+              { h: 'Remove duplicates, fill blanks, and split columns in clicks', b: 'Right-click any column header to see all available transformations for that column type. Remove Duplicates, Fill Down, Split Column, and Replace Values are the most commonly needed operations.' },
+              { h: 'Replace Values fixes consistent data quality issues in bulk', b: 'Use Replace Values to fix consistent typos across an entire column — for example, changing all N/A entries to null, or correcting a misspelled category name across thousands of rows.' },
+              { h: 'Every transformation is non-destructive and reversible', b: 'Applied Steps record every action. Click the X next to any step to remove it. Nothing is permanent — this makes Power Query safe to experiment in.' },
+            ],
+            tip: 'Right-click any column header to see all available transformations for that column type. It is faster than hunting through the Ribbon and surfaces options you might not know exist.',
+          },
+          {
+            title: 'Merge Queries & Append Tables',
+            tagline: 'Join tables like SQL, and stack data from multiple sources automatically.',
+            duration: '4 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Merge = JOIN. Append = UNION. Know the difference.', b: 'Merge joins two tables horizontally on a matching key column — like VLOOKUP but more powerful. Append stacks two tables vertically — combining January, February, March files into one.' },
+              { h: 'Left Outer Join is the most common merge type', b: 'Left Outer keeps all rows from the left table and adds matching data from the right. Equivalent to VLOOKUP behavior — missing matches become null.' },
+              { h: 'Column names must match exactly for joins to work', b: 'Column names must match exactly — including capitalization and spaces — for a Merge or Append to connect correctly. Even a trailing space causes a join to fail silently.' },
+              { h: 'Append from a folder automatically combines all files in it', b: 'Point Append at a folder and Power Query combines every file inside automatically. A Source.Name column tags which file each row came from — ideal for monthly report consolidation.' },
+            ],
+            tip: 'Use Left Anti Join to find rows in the left table with no match in the right — a quick way to identify products with no sales, or customers with no transactions.',
+          },
+          {
+            title: 'Auto-Refresh & M Language Basics',
+            tagline: 'Schedule data refresh and understand M Language — the code behind every Power Query step.',
+            duration: '4 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Every Applied Step is M Language code under the hood', b: 'Click View > Advanced Editor to see the M code behind your query. Each step is a named variable. Reading this code demystifies Power Query and unlocks manual edits.' },
+              { h: 'M Language is case-sensitive and functional', b: 'In M, every function returns a new value — nothing is mutated in place. This functional style means you can safely chain transformations without side effects.' },
+              { h: 'Parameters make queries dynamic and reusable', b: 'Create a Query Parameter (Manage Parameters) to make file paths, date ranges, or filter values configurable without reopening the Editor. One parameter, multiple queries use it.' },
+              { h: 'Configure refresh so data updates automatically', b: 'In Data > Queries & Connections, right-click a query to set refresh on file open or on a schedule. Connection-only queries avoid loading intermediate results into sheets.' },
+            ],
+            tip: 'Document complex queries by adding comments in M: prefix a line with // for a single-line comment. Essential if the query is maintained by a team or handed off later.',
+          },
+        ]
+      },
+      {
+        title: 'Module 7 — Dynamic Formulas & Modern Functions',
+        lessons: [
+          {
+            title: 'XLOOKUP — The VLOOKUP You Always Wanted',
+            tagline: 'Replaces VLOOKUP and INDEX/MATCH. Searches left or right, returns multiple columns, handles missing values cleanly.',
+            duration: '5 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'XLOOKUP searches in any direction — not just left-to-right', b: 'Unlike VLOOKUP, XLOOKUP can look left, right, up, or down. No more restructuring data to put the lookup column first.' },
+              { h: 'The if_not_found argument replaces IFERROR wrapping', b: 'XLOOKUP(lookup, search, return, "Not found") handles missing values cleanly as a built-in argument. Shorter and more readable than IFERROR(VLOOKUP(...), "Not found").' },
+              { h: 'Return an entire array — not just one column', b: 'Set the return_array to multiple columns and XLOOKUP returns all of them at once. Replaces INDEX/MATCH/MATCH for two-way lookups in a single formula.' },
+              { h: 'Last-match mode finds the most recent entry', b: 'Set match_mode to -1 (last match) to find the most recent transaction, latest status update, or newest record for a given ID — impossible with VLOOKUP.' },
+            ],
+            tip: 'For a two-criteria lookup, nest XLOOKUP inside XLOOKUP: =XLOOKUP(B2, XLOOKUP(A2,ColA,ColB), ColC). This replaces the much more complex INDEX/MATCH/MATCH combination.',
+          },
+          {
+            title: 'Dynamic Arrays: FILTER, SORT & UNIQUE',
+            tagline: 'Write one formula that returns an entire list — no Ctrl+Shift+Enter, no helper columns.',
+            duration: '5 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Dynamic array formulas spill results automatically', b: 'Enter one formula in one cell and Excel fills adjacent cells with all results automatically. No Ctrl+Shift+Enter, no copying down. The spill range expands and contracts as data changes.' },
+              { h: 'FILTER replaces complex SUMIFS + manual extraction', b: '=FILTER(A2:D100, C2:C100>"Jakarta") returns every row where column C is Jakarta. Combine multiple conditions with * (AND) or + (OR) inside the filter argument.' },
+              { h: 'SORT and SORTBY order results without disrupting source data', b: 'SORT(range, sort_column, 1/-1) returns a sorted copy. SORTBY lets you sort by a column not in the output range — sort names alphabetically by a separate score column.' },
+              { h: 'UNIQUE extracts a deduplicated list automatically', b: 'Combine UNIQUE with SORT: =SORT(UNIQUE(B2:B100)) gives a sorted list of unique values in one formula — perfect for a data validation dropdown that always stays current.' },
+            ],
+            tip: 'If cells below a FILTER formula already contain data, Excel displays a #SPILL! error. The spill area must be completely empty. Clear any content below your formula to fix it.',
+          },
+          {
+            title: 'LET & LAMBDA — Build Your Own Functions',
+            tagline: 'Name variables inside formulas with LET. Create reusable custom functions with LAMBDA — no VBA required.',
+            duration: '5 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'LET names sub-expressions to avoid repetition', b: '=LET(rate, B2/C2, rounded, ROUND(rate,2), rounded*100) defines variables inline. Calculate once, use multiple times — cleaner and faster than repeating the same sub-formula.' },
+              { h: 'LAMBDA creates a reusable function from a formula', b: '=LAMBDA(x, y, x*y+100) defines a function. Save it in Name Manager with a name and call it like =MyCalc(A1, B1) from any cell — a custom function without a single line of VBA.' },
+              { h: 'Complex formulas become readable with named variables', b: 'LET supports up to 126 name-value pairs. Use this to break a complex formula into named steps that read like program code — dramatically easier to debug and to hand to a colleague.' },
+              { h: 'LAMBDA combines with MAP, REDUCE, BYROW for array operations', b: 'Combine LAMBDA with MAP (apply to each row), REDUCE (accumulate), BYCOL (per column). This is the equivalent of .map() and .reduce() in JavaScript — functional programming in Excel.' },
+            ],
+            tip: 'LAMBDA supports recursion — you can call a LAMBDA from within itself using the LAMBDA(fn, fn) pattern. Useful for calculating Fibonacci, factorial, or traversing hierarchical data directly in Excel.',
+          },
+        ]
+      },
+      {
+        title: 'Module 8 — VBA & Advanced Macros',
+        lessons: [
+          {
+            title: 'Recording Macros & the VBA Editor',
+            tagline: 'Record actions, read the generated code, and run macros from buttons, shortcuts, or the Ribbon.',
+            duration: '4 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Enable Developer tab to access macro tools', b: 'File > Options > Customize Ribbon > check Developer. This reveals the Record Macro button, VBA Editor shortcut (Alt+F11), and the button insertion tools.' },
+              { h: 'The Macro Recorder writes VBA for you', b: 'Click Record Macro, perform your actions in Excel, click Stop. Excel writes the VBA code automatically. Reading the recorded code is the fastest way to learn VBA syntax.' },
+              { h: 'The VBA Editor has three panels: Project, Properties, Code', b: 'Alt+F11 opens the VBA Editor. Project Explorer shows all modules. The Code window is where you write and edit. Use F5 to run, F8 to step through line by line for debugging.' },
+              { h: 'Always save macro-enabled files as .xlsm', b: 'Always save files containing macros as .xlsm (Excel Macro-Enabled Workbook), not .xlsx. The .xlsx format silently strips all VBA code with no warning.' },
+            ],
+            tip: 'Use Developer > Use Relative References before recording if you want the macro to act relative to the active cell, rather than always going to the same absolute cell it recorded.',
+          },
+          {
+            title: 'Variables, Conditions & Loops in VBA',
+            tagline: 'Use Dim, If/Then, For, and For Each to write macros that think and repeat actions intelligently.',
+            duration: '5 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Declare variables with Dim and choose the right type', b: 'Dim name As String, count As Long, rate As Double. Use Long (not Integer) for row numbers — Integer only goes to 32,767 and overflows on large datasets.' },
+              { h: 'If/Then/Else branches VBA logic on conditions', b: 'If Cells(i,3).Value > 1000000 Then Cells(i,4).Value = "High" Else Cells(i,4).Value = "Normal" End If. The same logical branching as IF in a formula, but inside a macro.' },
+              { h: 'For loops repeat a fixed number of times', b: 'For i = 2 To 1000: [action]: Next i iterates through every row. Most data processing macros are a For loop around a set of cell operations.' },
+              { h: 'For Each iterates over every cell in a range', b: 'For Each cell In Range("A2:A500"): [action on cell]: Next cell. Cleaner than a row counter when you want to process every cell regardless of dataset size.' },
+            ],
+            tip: 'Put "Option Explicit" at the top of every VBA module. This forces all variables to be declared with Dim before use — it prevents typo-variable bugs that are extremely difficult to trace.',
+          },
+          {
+            title: 'Custom Functions (UDFs) & Report Automation',
+            tagline: 'Build your own Excel functions in VBA, and automate an end-to-end monthly report.',
+            duration: '5 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'A Function procedure is called from a cell like a built-in formula', b: 'Function TaxCalc(amount As Double) As Double: TaxCalc = amount * 0.11: End Function. Enter =TaxCalc(A1) in any cell. Sub procedures run as macros; Functions return values.' },
+              { h: 'ScreenUpdating = False makes macros dramatically faster', b: 'Add Application.ScreenUpdating = False at the start and True at the end. Stops the screen from flickering while the macro runs and dramatically speeds up execution.' },
+              { h: 'Disable auto-calculation for macros touching many cells', b: 'Application.Calculation = xlCalculationManual at the start and xlCalculationAutomatic at the end. For macros touching many cells, this can be 10–100x faster.' },
+              { h: 'Workbook events trigger macros automatically', b: 'Private Sub Workbook_Open() runs when the file opens. Worksheet_Change(ByVal Target As Range) fires when a cell changes. Events turn a workbook into an interactive application.' },
+            ],
+            tip: 'Add a description to your UDF using Application.MacroOptions after defining the function — your function will appear in the Function Wizard with its own category and description, exactly like built-in functions.',
+          },
+        ]
+      },
+      {
+        title: 'Module 9 — Power Pivot & Data Modeling',
+        lessons: [
+          {
+            title: 'Enabling Power Pivot & Understanding the Data Model',
+            tagline: 'The difference between the Data Model and a regular sheet table — and why it matters.',
+            duration: '4 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Power Pivot handles millions of rows without slowing Excel', b: 'Power Pivot uses columnar compression — 10 million rows of numeric data might occupy only a few hundred MB of memory. Regular Excel sheets struggle beyond ~100K rows.' },
+              { h: 'The Data Model stores multiple related tables', b: 'Unlike a single flat sheet, the Data Model holds multiple tables connected by relationships — like a database inside Excel. This eliminates the need for VLOOKUP between sheets.' },
+              { h: 'Load tables into the Data Model from Get & Transform', b: 'In Power Query, use Close & Load To > Add this data to the Data Model. In Excel, check "Add this data to the Data Model" in table import dialogs.' },
+              { h: 'Data Model tables cannot be edited by hand — by design', b: 'Data in the Data Model must come from the source. You cannot hand-type into it. This is a feature, not a limitation — it guarantees the model always reflects the source truth.' },
+            ],
+            tip: 'Use Power Query for transformation and cleaning, then load into the Power Pivot Data Model for analysis. The two tools are designed together: Power Query cleans, Power Pivot analyzes.',
+          },
+          {
+            title: 'Table Relationships & DAX Fundamentals',
+            tagline: 'Connect tables without VLOOKUP and write your first DAX measures: CALCULATE, SUMX, and RELATED.',
+            duration: '5 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Relationships replace VLOOKUP at the model level', b: 'Create a relationship between a Fact Table and a Dimension Table once. Every PivotTable built on the model can use columns from both tables — no VLOOKUP needed, ever.' },
+              { h: 'Star Schema: one Fact Table, multiple Dimension Tables', b: 'A Fact Table holds transactions (sales, events). Dimension Tables hold categories (products, customers, dates). This Star Schema structure is the optimal layout for any Data Model.' },
+              { h: 'Measures recalculate based on filter context', b: 'DAX Measures are not stored values — they recalculate every time the PivotTable filter changes. =CALCULATE(SUM(Sales[Amount]), Products[Category]="Laptop") returns sales for Laptops only.' },
+              { h: 'RELATED brings a column from a related table', b: 'In a Calculated Column, =RELATED(Products[Category]) pulls the category from the Products table for each row in the Sales table — equivalent to VLOOKUP, but faster and always accurate.' },
+            ],
+            tip: 'Calculated Columns compute once per row and are stored in memory. Measures recalculate every time the filter context changes. For aggregation and analysis, always use Measures — never Calculated Columns.',
+          },
+        ]
+      },
+      {
+        title: 'Module 10 — Advanced Dashboard & Storytelling',
+        lessons: [
+          {
+            title: 'Executive Dashboard Design Principles',
+            tagline: 'Visual hierarchy, color strategy, and layout that makes executives act instead of question.',
+            duration: '4 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Design for a specific audience — executives vs analysts', b: 'Executives need the answer at a glance: one headline number, one trend, one action. Analysts need drill-down detail. Never design one dashboard for both audiences.' },
+              { h: 'Visual hierarchy guides the eye to what matters most', b: 'Place your most important KPI top-left and make it the largest element. Use size, weight, and whitespace to rank information — the eye should land on the key number in under 2 seconds.' },
+              { h: 'Maximum 5 colors — each color must have a purpose', b: 'Use a maximum of 5 different colors in a single dashboard. More than that, color loses its function as a hierarchy marker and becomes visual noise. Red = bad, green = good, blue = neutral.' },
+              { h: 'The 3-second test validates every dashboard', b: 'Show your dashboard to someone for 3 seconds, then hide it. Ask what the most important insight was. If they cannot answer, redesign. Clarity is the only goal.' },
+            ],
+            tip: 'Minimum font sizes for presentation dashboards: 14pt for labels, 24pt for KPI numbers, 36pt+ for headline numbers. If someone cannot read it from 10 feet away in a meeting room, it is not useful.',
+          },
+          {
+            title: 'Formula-Based Conditional Formatting',
+            tagline: 'Use custom formulas in conditional formatting to highlight patterns that built-in rules cannot catch.',
+            duration: '4 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Custom formula rules apply to the entire row, not just one cell', b: 'Select the entire row range (A2:Z100), create a New Rule > Use a formula, enter =$C2>1000000. The $ on C locks the column — the rule evaluates column C for every row.' },
+              { h: 'Mixed references ($column, free row) are the key', b: 'In conditional formatting formulas, lock the column with $ but leave the row free: =$C2>100. This lets the rule evaluate correctly as it applies across each row.' },
+              { h: 'Build traffic-light indicators and heatmaps with formulas', b: 'Use icon sets with Show Icon Only to create a status column of visual indicators without text. Color scales turn a numeric column into a heatmap — instantly reveals high and low performers.' },
+              { h: 'Build a Gantt chart with two date columns and a formula', b: '=AND(C$1>=$B2, C$1<=$C2) applied to a grid of week columns creates a Gantt chart entirely in conditional formatting — no charts, no plugins, no add-ins required.' },
+            ],
+            tip: 'Conditional formatting re-evaluates every time the sheet recalculates. If you have hundreds of rules across thousands of cells, this can slow the file. Limit the formatted range to only the rows that contain data.',
+          },
+          {
+            title: 'Advanced Charts, Sparklines & Professional Distribution',
+            tagline: 'Waterfall charts, combo charts, sparklines, and how to package and protect your final workbook.',
+            duration: '5 min', level: 'Advanced', youtubeId: '',
+            keyPoints: [
+              { h: 'Waterfall charts show how components build to a total', b: 'Insert > Waterfall. Right-click subtotal and total bars > Set as Total so they display from zero as full bars. Essential for bridge analysis, budget vs actual, and variance reporting.' },
+              { h: 'Combo charts combine two chart types on a shared axis', b: 'Add a secondary Y-axis for series with different scales — revenue in millions on the left, margin % on the right. Click any series > Format > Secondary Axis.' },
+              { h: 'Sparklines are micro-charts that live inside cells', b: 'Insert > Sparklines. Place a trend line, bar, or win/loss chart inside a single cell. Ideal for showing row-by-row trends in a table without consuming chart area.' },
+              { h: 'Protect and package your workbook before distributing', b: 'Review > Protect Sheet locks formula cells while allowing data entry in designated cells. Save as PDF for universal sharing. Remove personal metadata: File > Check for Issues > Inspect Document.' },
+            ],
+            tip: 'Synchronize sparklines so all rows use the same axis scale: click any Sparkline > Axis > Same for All Sparklines. This makes row-to-row comparisons valid because the scale is consistent across all rows.',
+          },
+        ]
+      },
     ]
   },
 

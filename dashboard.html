@@ -866,7 +866,7 @@
               <span class="card-title-icon" aria-hidden="true">📚</span>
               My courses
             </div>
-            <a href="catalog.html" class="card-action">Browse catalog →</a>
+            
           </div>
           <div class="card-body">
             <div class="enrolled-list" role="list">
@@ -1138,7 +1138,7 @@
                 '<div class="enrolled-pct" id="pct-' + c.id + '">' + pct + '%</div>' +
                 '<div class="enrolled-lessons" id="lessons-' + c.id + '">' + (c.lessons_completed||0) + '/' + c.lesson_count + '</div>' +
                 '<div class="enrolled-status" style="color:' + statusColor + ';font-size:11px;font-weight:600;margin-top:4px" id="status-' + c.id + '">' + status + '</div>' +
-                (pct < 100 ? '<button class="btn-mark-complete" id="btn-' + c.id + '" onclick="markNextLesson(' + c.id + ',' + c.lesson_count + ',event)">+ Mark lesson done</button>' : '') +
+                (pct < 100 ? '<button class="btn-mark-complete" id="btn-' + c.id + '" onclick="markNextLesson(' + c.id + ',' + c.lesson_count + ',event)">Continue →</button>' : '') +
               '</div>' +
             '</div>';
           });
@@ -1300,11 +1300,11 @@
               var certsEl = document.getElementById('count-certs');
               if (certsEl) certsEl.textContent = parseInt(certsEl.textContent||0) + 1;
             } else {
-              if (btn) { btn.disabled = false; btn.textContent = '+ Mark lesson done'; }
+              if (btn) { btn.disabled = false; btn.textContent = 'Continue →'; }
             }
           });
       })
-      .catch(function() { if (btn) { btn.disabled = false; btn.textContent = '+ Mark lesson done'; } });
+      .catch(function() { if (btn) { btn.disabled = false; btn.textContent = 'Continue →'; } });
   }
 
   function fmtDate(str) {

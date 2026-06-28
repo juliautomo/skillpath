@@ -54,73 +54,36 @@
     a { color: inherit; text-decoration: none; }
     button { font-family: var(--sans); cursor: pointer; border: none; }
 
-    /* ── Nav ── */
+    /* ── Navigation (matches landing page exactly) ── */
     .nav {
       background: var(--white);
       border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 100;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
     .nav-inner {
-      max-width: 1280px; margin: 0 auto; padding: 0 32px;
-      display: flex; align-items: center;
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      height: 60px; gap: 32px;
+      height: 60px;
+      gap: 32px;
     }
-    .nav-logo {
-      display: flex; align-items: center; gap: 10px;
-      text-decoration: none; flex-shrink: 0;
-    }
-    .nav-logo-mark {
-      width: 32px; height: 32px;
-      background: var(--navy);
-      border-radius: 7px;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; text-decoration: none; }
+    .nav-logo-mark { width: 32px; height: 32px; background: var(--navy); border-radius: 7px; display: flex; align-items: center; justify-content: center; }
     .nav-logo-mark svg { width: 18px; height: 18px; }
-    .nav-logo-name {
-      font-size: 17px; font-weight: 500;
-      letter-spacing: -.02em; color: var(--navy);
-    }
+    .nav-logo-name { font-size: 17px; font-weight: 500; letter-spacing: -.02em; color: var(--navy); }
     .nav-logo-name span { color: var(--accent); }
-    .nav-links {
-      display: flex; align-items: center; gap: 28px; list-style: none;
-    }
-    .nav-links a {
-      font-size: 14px; color: var(--ink2);
-      transition: color var(--ease);
-    }
-    .nav-links a:hover, .nav-links a.active { color: var(--ink); font-weight: 500; }
-    .nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .nav-btn-ghost {
-      font-size: 14px; font-weight: 400; color: var(--ink2);
-      padding: 7px 16px; border-radius: var(--radius);
-      background: none; border: 1px solid transparent;
-      transition: background var(--ease), color var(--ease);
-    }
-    .nav-btn-ghost:hover { background: var(--bg2); color: var(--ink); }
-    .nav-btn-primary {
-      font-size: 14px; font-weight: 500;
-      background: var(--navy); color: #fff;
-      padding: 8px 20px; border-radius: var(--radius);
-      border: none; transition: background var(--ease);
-    }
-    .nav-btn-primary:hover { background: var(--navy3); }
-    /* ── Logout button (force dark navy) ── */
-    #nav-logout-btn {
-      background: #0D1B2A !important;
-      color: #ffffff !important;
-      font-size: 14px !important;
-      font-weight: 500 !important;
-      padding: 8px 20px !important;
-      border-radius: 7px !important;
-      border: none !important;
-      cursor: pointer !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      white-space: nowrap !important;
-    }
-    #nav-logout-btn:hover { background: #1a3550 !important; }
-
+    .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+    .nav-links a { font-size: 14px; font-weight: 400; color: var(--ink2); text-decoration: none; transition: color .2s ease; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-links .nav-active { color: var(--ink); font-weight: 500; }
+    .nav-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .btn-ghost { font-family: var(--sans); font-size: 14px; font-weight: 400; color: var(--ink2); padding: 7px 16px; border-radius: var(--radius); background: none; border: 1px solid transparent; cursor: pointer; transition: background .2s ease, color .2s ease; }
+    .btn-ghost:hover { background: var(--bg2); color: var(--ink); }
+    .btn-primary { font-family: var(--sans); font-size: 14px; font-weight: 500; background: var(--navy); color: #fff; padding: 8px 20px; border-radius: var(--radius); border: none; cursor: pointer; transition: background .2s ease; }
+    .btn-primary:hover { background: var(--navy3); }
     /* ── Page header ── */
     .page-header {
       background: var(--navy);
@@ -840,36 +803,27 @@
 <!-- ══════════════════════════════════════════
      NAV
 ══════════════════════════════════════════ -->
-<nav class="nav">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo">
-      <div class="nav-logo-mark">
-        <svg viewBox="0 0 16 16" fill="none">
-          <path d="M2 12L5.5 7L8 9.5L10.5 5.5L14 8" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="14" cy="8" r="1.4" fill="#C5E8D5"/>
-        </svg>
-      </div>
-      <span class="nav-logo-name">Skill<span>Path</span></span>
-    </a>
-    <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="catalog.html" class="active nav-active">Courses</a></li>
-      
-      <li><a href="index.html#how-it-works">How it works</a></li>
-      <li><a href="index.html#pricing">Pricing</a></li>
-    </ul>
-    <div class="nav-right">
-      <!-- Logged-out state -->
-      <div id="nav-auth-out" style="display:flex;align-items:center;gap:10px">
-        <button class="nav-btn-ghost" onclick="showAuthModal('login')">Log in</button>
-        <button class="nav-btn-primary" onclick="showAuthModal('register')">Get started</button>
-      </div>
-      <!-- Logged-in state (hidden until JS confirms token) -->
-      <div id="nav-auth-in" style="display:none;align-items:center;gap:10px">
-        <span id="nav-hi" style="font-size:14px;color:var(--ink2)">Hi!</span>
-        <button class="nav-btn-ghost" onclick="window.location.href='dashboard.html'">Dashboard</button>
-        <button id="nav-logout-btn" style="display:inline-flex;align-items:center;font-family:inherit;font-size:14px;font-weight:500;background:#0D1B2A;color:#ffffff;padding:8px 20px;border-radius:7px;border:none;cursor:pointer;line-height:1;white-space:nowrap">Log out</button>
-      </div>
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="SkillPath home">
+        <div class="nav-logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 14L7 8L10 11L13 6L15 9" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="15" cy="9" r="1.5" fill="#5DCAA5"/>
+          </svg>
+        </div>
+        <span class="nav-logo-name">Skill<span>Path</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="catalog.html" class="nav-active">Courses</a></li>
+        <li><a href="index.html#how-it-works">How it works</a></li>
+        <li><a href="index.html#pricing">Pricing</a></li>
+      </ul>
+      <div class="nav-actions" id="nav-actions">
+        <button class="btn-ghost" onclick="showAuthModal('login')">Log in</button>
+        <button class="btn-primary" onclick="showAuthModal('register')">Get started</button>
       </div>
     </div>
   </div>
@@ -1696,84 +1650,13 @@ applyFilters();
 (function() {
   var token = localStorage.getItem('sp_token');
   var user = JSON.parse(localStorage.getItem('sp_user') || 'null');
-
-  // Show logged-in nav state
-  if (token && user) {
-
-    // Update nav buttons to greeting + logout
-        var authOut = document.getElementById('nav-auth-out');
-    var authIn  = document.getElementById('nav-auth-in');
-    var hiEl    = document.getElementById('nav-hi');
-    var logoutBtn = document.getElementById('nav-logout-btn');
-    if (authOut) authOut.style.display = 'none';
-    if (authIn)  { authIn.style.display = 'flex'; }
-    if (hiEl)    { hiEl.textContent = 'Hi, ' + user.name.split(' ')[0] + ' 👋'; }
-    if (logoutBtn) {
-      logoutBtn.onclick = function() {
-        ['sp_token','sp_user','sp_enrollments','sp_enrollments_ts'].forEach(function(k){ localStorage.removeItem(k); });
-        location.reload();
-      };
-    }
-
-    // Sync enrollments — use localStorage cache for instant display, refresh in bg
-    (function syncEnrollments() {
-      try {
-        var cached = localStorage.getItem('sp_enrollments');
-        var ts = parseInt(localStorage.getItem('sp_enrollments_ts') || '0');
-        if (cached && Date.now() - ts < 30 * 60 * 1000) {
-          applyEnrollments(JSON.parse(cached));
-          // Refresh in background
-          fetch('https://skillpath-production-4f85.up.railway.app/api/enrollments', {
-            headers: { Authorization: 'Bearer ' + token }
-          }).then(function(r){ return r.ok ? r.json() : null; })
-            .then(function(d){ if (d) { localStorage.setItem('sp_enrollments', JSON.stringify(d)); localStorage.setItem('sp_enrollments_ts', String(Date.now())); applyEnrollments(d); } })
-            .catch(function(){});
-          return;
-        }
-      } catch(e) {}
-      // No cache — fetch with 10s timeout
-      var ctrl = new AbortController();
-      var timer = setTimeout(function() { ctrl.abort(); }, 10000);
-      fetch('https://skillpath-production-4f85.up.railway.app/api/enrollments', {
-        headers: { Authorization: 'Bearer ' + token },
-        signal: ctrl.signal
-      })
-      .then(function(r) { clearTimeout(timer); return r.ok ? r.json() : null; })
-      .then(function(d) {
-        if (!d) return;
-        try { localStorage.setItem('sp_enrollments', JSON.stringify(d)); localStorage.setItem('sp_enrollments_ts', String(Date.now())); } catch(e) {}
-        applyEnrollments(d);
-      })
-      .catch(function() {});
-    })();
-
-    function applyEnrollments(data) {
-      if (!data || !data.courses) return;
-      data.courses.forEach(function(ec) {
-        var course = COURSES.find(function(c) {
-          return c.id === ec.id || c.slug === ec.slug ||
-            c.slug === (ec.slug || '').replace(/-/g,'_') ||
-            (c.slug || '').replace(/-/g,'_') === (ec.slug || '');
-        });
-        if (course) {
-          course.enrolled = true;
-          course.progress = ec.progress || 0;
-          course.lessonsCompleted = ec.lessons_completed || 0;
-        }
-      });
-      applyFilters();
-      // Update modal footer if it's currently open for an enrolled course
-      if (typeof activeCourse !== 'undefined' && activeCourse) {
-        var updated = COURSES.find(function(c){ return c.id === activeCourse.id; });
-        if (updated && updated.enrolled) {
-          activeCourse = updated;
-          var footerEl = document.getElementById('modal-footer');
-          if (footerEl) {
-            footerEl.innerHTML = '<div class="modal-footer-btns"><button class="btn-modal-continue" onclick="window.location.href=\'lesson.html?course=\' + activeCourse.slug">Continue course →</button></div>';
-          }
-        }
-      }
-    }
+  var navActions = document.getElementById('nav-actions');
+  if (token && user && navActions) {
+    var firstName = user.name ? user.name.split(' ')[0] : 'there';
+    navActions.innerHTML =
+      '<span style="font-size:14px;color:var(--ink2)">Hi, ' + firstName + ' 👋</span>' +
+      '<button class="btn-ghost" onclick="window.location.href=\'dashboard.html\'">Dashboard</button>' +
+      '<button class="btn-primary" onclick="localStorage.removeItem(\'sp_token\');localStorage.removeItem(\'sp_user\');localStorage.removeItem(\'sp_enrollments\');localStorage.removeItem(\'sp_enrollments_ts\');location.reload()">Log out</button>';
   }
 })();
 </script>

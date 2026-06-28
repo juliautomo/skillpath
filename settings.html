@@ -705,13 +705,57 @@
     @media (max-width: 900px) {
       .mobile-menubar { display: flex; }
     }
+
+    /* ── Main layout ── */
+    .main { margin-left: var(--sb-width); min-height: 100vh; display: flex; flex-direction: column; }
+    .content { padding: 36px 44px; flex: 1; max-width: 720px; }
+    .page-title { font-size: 22px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+    .page-sub { font-size: 14px; color: var(--ink3); margin-bottom: 28px; }
+
+    /* ── Settings sections ── */
+    .settings-section { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 32px; margin-bottom: 20px; }
+    .settings-section-header { margin-bottom: 20px; }
+    .settings-section-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+    .settings-section-desc { font-size: 13px; color: var(--ink3); }
+
+    /* ── Password fields ── */
+    .pwd-fields { display: grid; gap: 14px; margin-bottom: 20px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; font-weight: 500; color: var(--ink2); }
+    .field input { font-family: var(--sans); font-size: 14px; color: var(--ink); background: var(--bg); padding: 9px 13px; border: 1px solid var(--border2); border-radius: var(--radius); outline: none; transition: border-color var(--ease), background var(--ease); }
+    .field input:focus { border-color: var(--accent); background: var(--white); }
+
+    /* ── Settings rows (notifications, account) ── */
+    .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .settings-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .settings-row:first-of-type { padding-top: 0; }
+    .settings-row-label { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+    .settings-row-sub { font-size: 12px; color: var(--ink3); }
+
+    /* ── Toggle switch ── */
+    .toggle { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track { position: absolute; inset: 0; border-radius: 20px; background: var(--border2); cursor: pointer; transition: background var(--ease); }
+    .toggle input:checked ~ .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform var(--ease); pointer-events: none; }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
+
+    /* ── Buttons ── */
+    .btn-row { display: flex; gap: 10px; }
+    .btn-primary { font-family: var(--sans); font-size: 14px; font-weight: 500; padding: 9px 22px; border-radius: var(--radius); background: var(--navy); color: #fff; border: none; cursor: pointer; transition: background var(--ease); }
+    .btn-primary:hover { background: var(--navy2); }
+    .btn-ghost { font-family: var(--sans); font-size: 14px; color: var(--ink2); padding: 9px 22px; border-radius: var(--radius); background: none; border: 1px solid var(--border2); cursor: pointer; transition: background var(--ease); }
+    .btn-ghost:hover { background: var(--bg2); }
+
+    /* ── Toast ── */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--navy); color: #fff; padding: 10px 22px; border-radius: var(--radius); font-size: 13px; transition: transform .25s ease; z-index: 1000; pointer-events: none; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
 <div id="sidebar-root"></div>
 <script src="sidebar.js"></script>
 <main class="main">
-</div>
   <div class="content">
     <div class="page-title">Settings</div>
     <div class="page-sub">Manage your account preferences and security.</div>

@@ -1138,7 +1138,7 @@
                 '<div class="enrolled-pct" id="pct-' + c.id + '">' + pct + '%</div>' +
                 '<div class="enrolled-lessons" id="lessons-' + c.id + '">' + (c.lessons_completed||0) + '/' + c.lesson_count + '</div>' +
                 '<div class="enrolled-status" style="color:' + statusColor + ';font-size:11px;font-weight:600;margin-top:4px" id="status-' + c.id + '">' + status + '</div>' +
-                (pct < 100 ? '<button class="btn-mark-complete" id="btn-' + c.id + '" onclick="markNextLesson(' + c.id + ',' + c.lesson_count + ',event)">Continue →</button>' : '') +
+                (pct < 100 ? '<a href="lesson.html?course=' + c.slug + '" class="btn-mark-complete" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">Continue →</a>' : '') +
               '</div>' +
             '</div>';
           });

@@ -1405,6 +1405,10 @@ function renderGrid(courses) {
 function openModal(id) {
   const c = COURSES.find(x => x.id === id);
   if (!c) return;
+  if (c.enrolled) {
+    window.location.href = 'lesson.html?course=' + c.slug;
+    return;
+  }
   activeCourse = c;
 
   document.getElementById('modal-bc').textContent = c.title;

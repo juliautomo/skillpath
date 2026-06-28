@@ -796,11 +796,10 @@
           <div class="stat-card-icon ic-green" aria-hidden="true">
             <svg viewBox="0 0 17 17" fill="none"><path d="M3 13L6.5 8l3 3 3.5-5L14.5 8" stroke="#1A6B4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <span class="stat-card-delta delta-up">+3 this week</span>
         </div>
-        <div class="stat-card-val" id="count-lessons">0</div>
+        <div class="stat-card-val" id="count-lessons">—</div>
         <div class="stat-card-label">Lessons completed</div>
-        <div class="stat-card-sub">Across 2 enrolled courses</div>
+        <div class="stat-card-sub" id="sub-lessons">Loading…</div>
       </div>
 
       <div class="stat-card anim-2" style="animation-delay:.06s">
@@ -808,11 +807,10 @@
           <div class="stat-card-icon ic-gold" aria-hidden="true">
             <svg viewBox="0 0 17 17" fill="none"><circle cx="8.5" cy="8.5" r="6" stroke="#C9960C" stroke-width="1.5"/><path d="M8.5 5.5v3l2 1.2" stroke="#C9960C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <span class="stat-card-delta delta-up">+4h this week</span>
         </div>
-        <div class="stat-card-val" id="count-hours">0</div>
+        <div class="stat-card-val" id="count-hours">—</div>
         <div class="stat-card-label">Hours of learning</div>
-        <div class="stat-card-sub">Avg 1.8 hrs / session</div>
+        <div class="stat-card-sub" id="sub-hours">Loading…</div>
       </div>
 
       <div class="stat-card anim-2" style="animation-delay:.12s">
@@ -820,11 +818,10 @@
           <div class="stat-card-icon ic-blue" aria-hidden="true">
             <svg viewBox="0 0 17 17" fill="none"><path d="M8.5 1.5l2 4 4.5.7-3.2 3.1.8 4.5-4.1-2.1-4 2.1.7-4.5L2 6.2l4.5-.7 2-4Z" stroke="#1B5FAD" stroke-width="1.4" stroke-linejoin="round"/></svg>
           </div>
-          <span class="stat-card-delta delta-new">1 pending</span>
         </div>
-        <div class="stat-card-val" id="count-certs">0</div>
+        <div class="stat-card-val" id="count-certs">—</div>
         <div class="stat-card-label">Certificates earned</div>
-        <div class="stat-card-sub">Excel &amp; Sheets complete</div>
+        <div class="stat-card-sub" id="sub-certs">Loading…</div>
       </div>
 
       <div class="stat-card anim-2" style="animation-delay:.18s">
@@ -832,11 +829,10 @@
           <div class="stat-card-icon ic-coral" aria-hidden="true">
             <svg viewBox="0 0 17 17" fill="none"><rect x="2" y="2" width="13" height="13" rx="2" stroke="#C05A2A" stroke-width="1.4"/><path d="M5.5 8.5l2 2 4-4" stroke="#C05A2A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <span class="stat-card-delta delta-up" id="badge-submitted" style="display:none"></span>
         </div>
-        <div class="stat-card-val" id="count-projects">0</div>
+        <div class="stat-card-val" id="count-projects">—</div>
         <div class="stat-card-label">Projects submitted</div>
-        <div class="stat-card-sub">2 assessments pending</div>
+        <div class="stat-card-sub" id="sub-projects">Loading…</div>
       </div>
 
     </div>
@@ -1116,15 +1112,15 @@
   var user = JSON.parse(localStorage.getItem('sp_user') || 'null');
   var icons = {'excel-google-sheets':'📊','sql-data-analysis':'🗄️','sql-for-data-analysis':'🗄️','python-for-data':'🐍','data-visualization':'📈','data-visualization-dashboards':'📈'};
 
-  // Set user name immediately from localStorage
+  // Set user name immediately from localStorage (null-safe)
   if (user) {
-    var firstName = user.name.split(' ')[0];
+    var firstName = (user.name || 'there').split(' ')[0];
     var welcomeEl = document.getElementById('welcome-name');
     var sbNameEl = document.getElementById('sb-name');
     var sbRoleEl = document.querySelector('.sb-user-role');
     if (welcomeEl) welcomeEl.textContent = firstName + '.';
-    if (sbNameEl) sbNameEl.textContent = user.name;
-    if (sbRoleEl) sbRoleEl.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+    if (sbNameEl) sbNameEl.textContent = user.name || '';
+    if (sbRoleEl && user.role) sbRoleEl.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
   }
 
   if (!token) {
@@ -1160,9 +1156,15 @@
       if (courses.length === 0) {
         if (subEl) subEl.textContent = 'Start your learning journey — browse and enroll in a course!';
         if (infoEl) infoEl.textContent = 'No courses enrolled yet';
-      } else if (activeCourse) {
-        if (subEl) subEl.textContent = "You're " + activeCourse.progress_pct + "% through " + activeCourse.title + ". Keep going!";
-        if (metaEl1) metaEl1.textContent = activeCourse.title.split(' ').slice(0,3).join(' ') + ' · ' + (activeCourse.lessons_completed||0) + ' of ' + activeCourse.lesson_count + ' lessons';
+      } else {
+        var allDone = courses.every(function(c){ return c.progress_pct >= 100; });
+        var msg = allDone
+          ? 'You\'ve completed all enrolled courses. Keep it up!'
+          : activeCourse
+            ? 'You\'re ' + activeCourse.progress_pct + '% through ' + (activeCourse.title||'your course') + '. Keep going!'
+            : 'You have ' + totalCourses + ' course' + (totalCourses > 1 ? 's' : '') + ' enrolled.';
+        if (subEl) subEl.textContent = msg;
+        if (metaEl1 && activeCourse) metaEl1.textContent = (activeCourse.title||'').split(' ').slice(0,3).join(' ') + ' · ' + (activeCourse.lessons_completed||0) + ' of ' + (activeCourse.lesson_count||0) + ' lessons';
         if (metaEl2) metaEl2.textContent = totalCourses + ' course' + (totalCourses > 1 ? 's' : '') + ' enrolled · ' + totalLessons + ' lessons done';
         if (infoEl) infoEl.textContent = totalCourses + ' enrolled · ' + totalLessons + ' lessons completed';
       }
@@ -1172,20 +1174,18 @@
       var certsEl = document.getElementById('count-certs');
       var projectsEl = document.getElementById('count-projects');
       var hoursEl = document.getElementById('count-hours');
-      if (lessonsEl) lessonsEl.textContent = totalLessons;
-      if (certsEl) certsEl.textContent = courses.filter(function(c){ return c.progress_pct >= 100; }).length;
       if (projectsEl) projectsEl.textContent = 0;
-      var totalAvailProjects = courses.reduce(function(s,c){ return s + parseInt(c.project_count||0); }, 0);
-      var projSubEl = document.querySelector('#count-projects ~ .stat-card-sub');
-      if (projSubEl) projSubEl.textContent = totalAvailProjects + ' projects available';
-      if (hoursEl) hoursEl.textContent = Math.round(totalLessons * 1.5);
 
-      // Update stat sub-labels
-      var subLabels = document.querySelectorAll('.stat-card-sub');
-      if (subLabels[0]) subLabels[0].textContent = 'Across ' + totalCourses + ' enrolled course' + (totalCourses !== 1 ? 's' : '');
-      if (subLabels[1]) subLabels[1].textContent = 'Est. ' + Math.round(totalLessons * 1.5) + ' hrs total';
-      if (subLabels[2]) subLabels[2].textContent = courses.filter(function(c){ return c.progress_pct >= 100; }).length + ' course' + (courses.filter(function(c){ return c.progress_pct >= 100; }).length !== 1 ? 's' : '') + ' complete';
-      if (subLabels[3]) subLabels[3].textContent = totalCourses + ' course' + (totalCourses !== 1 ? 's' : '') + ' enrolled';
+      // Update stat sub-labels (using IDs now)
+      var completedCourses = courses.filter(function(c){ return c.progress_pct >= 100; }).length;
+      var sl = document.getElementById('sub-lessons'); if (sl) sl.textContent = 'Across ' + totalCourses + ' enrolled course' + (totalCourses !== 1 ? 's' : '');
+      var sh = document.getElementById('sub-hours');   if (sh) sh.textContent = 'Est. ' + Math.round(totalLessons * 1.5) + ' hrs total';
+      var sc = document.getElementById('sub-certs');   if (sc) sc.textContent = completedCourses + ' course' + (completedCourses !== 1 ? 's' : '') + ' complete';
+      var sp = document.getElementById('sub-projects'); if (sp) sp.textContent = totalCourses + ' course' + (totalCourses !== 1 ? 's' : '') + ' enrolled';
+      // Update counts
+      if (lessonsEl) lessonsEl.textContent = totalLessons;
+      if (hoursEl) hoursEl.textContent = Math.round(totalLessons * 1.5);
+      if (certsEl) certsEl.textContent = completedCourses;
 
       // ── Enrolled courses list ────────────────────────
       // Wire Continue learning button to first enrolled course
@@ -1338,4 +1338,7 @@
 
   function markNextLesson(courseId, totalLessons, e) {
     e.stopPropagation();
-    var API = 'https://skillpath-production-4f85.up.railway.app
+    var API = 'https://skillpath-production-4f85.up.railway.app';
+    var token = localStorage.getItem('sp_token');
+    var btn = document.getElementById('btn-' + courseId);
+    if (btn) { btn.disabled = t

@@ -1363,33 +1363,6 @@ function renderLesson(idx) {
 
         <div class="card" style="margin-top:16px">
           <div class="card-header">
-            <div class="card-title">📎 Resources</div>
-          </div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-            <a class="resource-item" href="#" onclick="return false" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px;opacity:.5;cursor:not-allowed">
-              <span style="font-size:16px">📄</span>
-              <span style="flex:1">Lesson notes — ${les.title}<br><span style="font-size:11px;color:var(--ink3)">PDF · Coming soon</span></span>
-            </a>
-            <a class="resource-item" href="#" onclick="return false" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px;opacity:.5;cursor:not-allowed">
-              <span style="font-size:16px">📊</span>
-              <span style="flex:1">Practice dataset<br><span style="font-size:11px;color:var(--ink3)">XLSX · Coming soon</span></span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: key points + lesson list -->
-      <div class="anim-3">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Key points</div>
-            <div class="card-meta">${les.keyPoints.length} insights</div>
-          </div>
-          <div class="card-body">${keyPtsHtml}</div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
             <div class="card-title">Course lessons</div>
             <div class="card-meta">${doneCount} / ${flatLessons.length}</div>
           </div>
@@ -1402,6 +1375,33 @@ function renderLesson(idx) {
               <div class="progress-fill" style="width:${pct}%"></div>
             </div>
             ${lessonListHtml}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: key points + resources -->
+      <div class="anim-3">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Key points</div>
+            <div class="card-meta">${les.keyPoints.length} insights</div>
+          </div>
+          <div class="card-body">${keyPtsHtml}</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📎 Resources</div>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+            <a class="resource-item" href="#" onclick="return false" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px;opacity:.5;cursor:not-allowed">
+              <span style="font-size:16px">📄</span>
+              <span style="flex:1">Lesson notes — ${les.title}<br><span style="font-size:11px;color:var(--ink3)">PDF · Coming soon</span></span>
+            </a>
+            <a class="resource-item" href="#" onclick="return false" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px;opacity:.5;cursor:not-allowed">
+              <span style="font-size:16px">📊</span>
+              <span style="flex:1">Practice dataset<br><span style="font-size:11px;color:var(--ink3)">XLSX · Coming soon</span></span>
+            </a>
           </div>
         </div>
       </div>

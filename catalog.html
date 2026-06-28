@@ -992,8 +992,8 @@
   <!-- ── Catalog main ── -->
   <div class="catalog-main">
 
-    <!-- Bundle banner -->
-    <div class="bundle-banner">
+    <!-- Bundle banner (hidden until all courses are available) -->
+    <div class="bundle-banner" style="display:none">
       <div class="bundle-decor1"></div>
       <div class="bundle-decor2"></div>
       <div>
@@ -1372,11 +1372,11 @@ function renderGrid(courses) {
           <div class="card-meta-item"><span class="card-meta-val">${c.projects}</span><span class="card-meta-lbl">Projects</span></div>
           ${c.enrolled ? `<div class="card-meta-item"><span class="card-meta-val">${c.progress}%</span><span class="card-meta-lbl">Complete</span></div>` : `<div class="card-meta-item"><span class="card-meta-val">Cert</span><span class="card-meta-lbl">Included</span></div>`}
         </div>
-        <div class="card-footer">
-          <div>
+        <div class="card-footer" style="${c.comingSoon ? 'justify-content:flex-end' : ''}">
+          ${!c.comingSoon ? `<div>
             <div class="card-price">${fmt(c)}</div>
             <div class="card-price-alt">${fmtAlt(c)}</div>
-          </div>
+          </div>` : ''}
           ${c.enrolled
             ? `<button class="btn-continue" onclick="event.stopPropagation();window.location.href='lesson.html?course='+${JSON.stringify(c.slug)}">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1487,20 +1487,20 @@ function openModal(id) {
 
   // Footer
   document.getElementById('modal-footer').innerHTML = `
-    <div class="modal-footer-price">
+    ${!c.comingSoon ? `<div class="modal-footer-price">
       <div>
         <div class="modal-price-main" id="modal-price-main">${fmt(c)}</div>
         <div class="modal-price-alt" id="modal-price-alt">${fmtAlt(c)}</div>
       </div>
       <span style="font-size:12px;color:var(--ink3)">One-time · Lifetime access</span>
-    </div>
+    </div>` : ''}
     <div class="modal-footer-btns">
-
       ${c.enrolled
         ? `<button class="btn-modal-continue">Continue course →</button>`
         : c.comingSoon
-          ? `<button class="btn-modal-enroll" disabled style="opacity:.5;cursor:not-allowed;">Coming Soon</button>`
-          : `<button class="btn-modal-enroll" onclick="event.stopPropagation();skillpathBuy(${c.id}, '${c.title}', ${c.priceIdr})">Enroll now →</button>`
+          ? `<button class="btn-modal-enroll" disabled style="opacity:.5;cursor:not-allowed;width:100%">🔒 Coming Soon — stay tuned</button>`
+          : `<button class="btn-modal-preview" onclick="openPreview()">Preview</button>
+             <button class="btn-modal-enroll" onclick="event.stopPropagation();skillpathBuy(${c.id}, '${c.title}', ${c.priceIdr})">Enroll now →</button>`
       }
     </div>
   `;
@@ -1749,16 +1749,4 @@ applyFilters();
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var enrolledIds = (data.courses || []).map(function(c) { return c.id; });
-      if (typeof COURSES !== 'undefined') {
-        COURSES.forEach(function(c) {
-          c.enrolled = enrolledIds.indexOf(c.id) !== -1;
-        });
-        if (typeof renderCourses === 'function') renderCourses();
-      }
-    }).catch(function(){});
-  }
-})();
-</script>
-
-</body>
-</html>
+ 

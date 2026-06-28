@@ -844,9 +844,17 @@
       <li><a href="index.html#pricing">Pricing</a></li>
     </ul>
     <div class="nav-right">
-      <div id="nav-auth-buttons">
+      <!-- Logged-out state -->
+      <div id="nav-auth-out" style="display:flex;align-items:center;gap:10px">
         <button class="nav-btn-ghost" onclick="showAuthModal('login')">Log in</button>
         <button class="nav-btn-primary" onclick="showAuthModal('register')">Get started</button>
+      </div>
+      <!-- Logged-in state (hidden until JS confirms token) -->
+      <div id="nav-auth-in" style="display:none;align-items:center;gap:10px">
+        <span id="nav-hi" style="font-size:14px;color:var(--ink2)">Hi!</span>
+        <button class="nav-btn-ghost" onclick="window.location.href='dashboard.html'">Dashboard</button>
+        <button class="nav-btn-primary" id="nav-logout-btn">Log out</button>
+      </div>
       </div>
     </div>
   </div>
@@ -1678,13 +1686,18 @@ applyFilters();
   if (token && user) {
 
     // Update nav buttons to greeting + logout
-    var authDiv = document.getElementById('nav-auth-buttons');
-    if (authDiv) {
-      var firstName = user.name.split(' ')[0];
-      authDiv.innerHTML =
-        '<span style="font-size:14px;color:#4A4A4A">Hi, ' + firstName + ' 👋</span>' +
-        '<button style="font-size:14px;font-weight:400;color:#4A4A4A;padding:7px 14px;border-radius:7px;background:none;border:1px solid transparent;cursor:pointer" onclick="window.location.href=\'dashboard.html\'">Dashboard</button>' +
-        '<button style="font-size:14px;font-weight:500;background:#0D1B2A;color:#fff;padding:8px 18px;border-radius:7px;border:none;cursor:pointer" onclick="localStorage.removeItem(\'sp_token\');localStorage.removeItem(\'sp_user\');localStorage.removeItem(\'sp_enrollments\');localStorage.removeItem(\'sp_enrollments_ts\');location.reload()">Log out</button>';
+        var authOut = document.getElementById('nav-auth-out');
+    var authIn  = document.getElementById('nav-auth-in');
+    var hiEl    = document.getElementById('nav-hi');
+    var logoutBtn = document.getElementById('nav-logout-btn');
+    if (authOut) authOut.style.display = 'none';
+    if (authIn)  { authIn.style.display = 'flex'; }
+    if (hiEl)    { hiEl.textContent = 'Hi, ' + user.name.split(' ')[0] + ' 👋'; }
+    if (logoutBtn) {
+      logoutBtn.onclick = function() {
+        ['sp_token','sp_user','sp_enrollments','sp_enrollments_ts'].forEach(function(k){ localStorage.removeItem(k); });
+        location.reload();
+      };
     }
 
     // Sync enrollments — use localStorage cache for instant display, refresh in bg

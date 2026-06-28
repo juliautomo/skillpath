@@ -931,7 +931,7 @@ let courseData    = null;
 
 /* ── Boot ───────────────────────────────────────────────────────── */
 async function boot() {
-  // Sidebar user info
+  // ── 1. Instant setup from local data (no API needed) ─────────────
   const displayUser = spUser || (window.PREVIEW_MODE ? { name: 'Preview User' } : null);
   if (displayUser) {
     const name = displayUser.name || displayUser.email || 'Student';
@@ -943,39 +943,44 @@ async function boot() {
   if (!courseData) { renderNotFound(); return; }
 
   flatLessons = buildFlatLessons(courseData);
-  document.title = `${flatLessons[lessonIdx]?.title || 'Lesson'} · SkillPath`;
-
-  // Breadcrumb
-  document.getElementById('bc-course').textContent = courseData.title;
-  document.getElementById('bc-lesson').textContent = flatLessons[lessonIdx]?.title || 'Lesson';
-  document.getElementById('bc-course').href = `catalog.html`;
-
-  // Fetch enrollment + progress in parallel
-  const [enrollData, progressData] = await Promise.all([
-    fetchEnrollments(),
-    fetchProgress(),
-  ]);
-
-  // Check enrollment
-  if (!enrollData) { renderAccessDenied('not-logged-in'); return; }
-
-  const enrolled = enrollData.courses?.find(c => c.slug === courseSlug || c.slug === courseSlug.replace(/-/g, '_'));
-  if (!enrolled) { renderAccessDenied('not-enrolled'); return; }
-
-  courseId = enrolled.id;
-
-  // Sidebar progress
-  renderSidebarProgress(enrollData.courses);
-
-  // Completed lessons
-  if (progressData?.completed_lessons) {
-    progressData.completed_lessons.forEach(i => completedSet.add(i));
-  }
-
-  // Validate lesson index
   const idx = Math.min(Math.max(lessonIdx, 0), flatLessons.length - 1);
 
+  document.title = flatLessons[idx]?.title + ' · SkillPath';
+  document.getElementById('bc-course').textContent = courseData.title;
+  document.getElementById('bc-lesson').textContent = flatLessons[idx]?.title || 'Lesson';
+  document.getElementById('bc-course').href = 'catalog.html';
+
+  // ── 2. Render lesson content immediately (no Railway wait) ────────
   renderLesson(idx);
+
+  // ── 3. Check enrollment in background, enable progress features ───
+  if (!token) return; // not logged in — lesson visible, progress disabled
+  try {
+    const [enrollData, progressData] = await Promise.all([
+      fetchEnrollments(),
+      null, // progress fetched after we have courseId
+    ]);
+    if (!enrollData) return;
+    const enrolled = enrollData.courses?.find(c => c.slug === courseSlug || c.slug === courseSlug.replace(/-/g, '_'));
+    if (!enrolled) {
+      // Show subtle "not enrolled" banner without hiding content
+      const banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999;display:flex;gap:12px;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+      banner.innerHTML = 'Enroll to track your progress <a href="catalog.html" style="color:#6ee7b7;font-weight:600">Enroll →</a>';
+      document.body.appendChild(banner);
+      return;
+    }
+    courseId = enrolled.id;
+    renderSidebarProgress(enrollData.courses);
+
+    // Now fetch progress
+    const progR = await fetch(API + '/api/progress/' + courseId, { headers: { Authorization: 'Bearer ' + token } });
+    const progressData2 = progR.ok ? await progR.json() : null;
+    if (progressData2?.completed_lessons) {
+      progressData2.completed_lessons.forEach(i => completedSet.add(i));
+      renderLesson(idx); // re-render with real progress
+    }
+  } catch(e) {}
 }
 
 /* ── API helpers ─────────────────────────────────────────────────── */
@@ -1087,13 +1092,8 @@ function renderLesson(idx) {
   document.title = `${les.title} · SkillPath`;
 
   const videoHtml = les.youtubeId
-    ? `<iframe src="https://www.youtube.com/embed/${les.youtubeId}?rel=0&modestbranding=1" allowfullscreen allow="autoplay; encrypted-media"></iframe>`
-    : `<div class="video-placeholder">
-        <div class="video-placeholder-ring">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M8 5.5l11 6.5-11 6.5V5.5Z" fill="rgba(197,232,213,.6)" stroke="rgba(197,232,213,.6)" stroke-width="1.5" stroke-linejoin="round"/></svg>
-        </div>
-        <p>Video coming soon</p>
-       </div>`;
+    ? '<iframe src="https://www.youtube.com/embed/' + les.youtubeId + '?rel=0&modestbranding=1" allowfullscreen allow="autoplay; encrypted-media"></iframe>'
+    : '<div class="video-placeholder"><div class="video-placeholder-ring"><svg viewBox="0 0 24 24" fill="none"><path d=\"M8 5.5l11 6.5-11 6.5V5.5Z\" fill=\"rgba(197,232,213,.6)\" stroke=\"rgba(197,232,213,.6)\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/></svg></div><p style=\"font-size:13px;color:rgba(255,255,255,.4);margin:8px 0 4px\">Video coming soon</p><p style=\"font-size:11px;color:rgba(255,255,255,.25)\">Lessons below cover the same material</p></div>';
 
   const keyPtsHtml = les.keyPoints.map((kp, i) => `
     <div class="key-point">
@@ -1154,7 +1154,23 @@ function renderLesson(idx) {
           </button>
         </div>
 
-        ${les.tip ? `<div class="tip-wrap"><div class="tip-label">Tip</div><div class="tip-text">${les.tip}</div></div>` : ''}
+        ${les.tip ? '<div class=\"tip-wrap\"><div class=\"tip-label\">Tip</div><div class=\"tip-text\">' + les.tip + '</div></div>' : ''}
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <div class="card-title">📎 Resources</div>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+            <a class="resource-item" href="#" onclick="return false" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px;opacity:.5;cursor:not-allowed">
+              <span style="font-size:16px">📄</span>
+              <span style="flex:1">Lesson notes — ${les.title}<br><span style="font-size:11px;color:var(--ink3)">PDF · Coming soon</span></span>
+            </a>
+            <a class="resource-item" href="#" onclick="return false" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px;opacity:.5;cursor:not-allowed">
+              <span style="font-size:16px">📊</span>
+              <span style="flex:1">Practice dataset<br><span style="font-size:11px;color:var(--ink3)">XLSX · Coming soon</span></span>
+            </a>
+          </div>
+        </div>
       </div>
 
       <!-- Right: key points + lesson list -->

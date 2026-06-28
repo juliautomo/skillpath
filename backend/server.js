@@ -13,8 +13,9 @@ const PORT = process.env.PORT || 3000;
 
 // ── Middleware ───────────────────────────────────────
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
-  credentials: true,
+  origin: process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',').map(s => s.trim())
+    : '*',
 }));
 
 // Midtrans webhooks send raw bodies — parse JSON for all other routes

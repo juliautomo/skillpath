@@ -58,20 +58,20 @@
     .nav {
       background: var(--white);
       border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 80;
+      position: sticky; top: 0; z-index: 100;
     }
     .nav-inner {
       max-width: 1280px; margin: 0 auto; padding: 0 32px;
       display: flex; align-items: center;
       justify-content: space-between;
-      height: 58px; gap: 24px;
+      height: 60px; gap: 32px;
     }
     .nav-logo {
-      display: flex; align-items: center; gap: 9px;
+      display: flex; align-items: center; gap: 10px;
       text-decoration: none; flex-shrink: 0;
     }
     .nav-logo-mark {
-      width: 30px; height: 30px;
+      width: 32px; height: 32px;
       background: var(--navy);
       border-radius: 7px;
       display: flex; align-items: center; justify-content: center;
@@ -83,17 +83,17 @@
     }
     .nav-logo-name span { color: var(--accent); }
     .nav-links {
-      display: flex; align-items: center; gap: 24px; list-style: none;
+      display: flex; align-items: center; gap: 28px; list-style: none;
     }
     .nav-links a {
-      font-size: 14px; color: var(--ink3);
+      font-size: 14px; color: var(--ink2);
       transition: color var(--ease);
     }
     .nav-links a:hover, .nav-links a.active { color: var(--ink); font-weight: 500; }
     .nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .nav-btn-ghost {
       font-size: 14px; font-weight: 400; color: var(--ink2);
-      padding: 7px 14px; border-radius: var(--radius);
+      padding: 7px 16px; border-radius: var(--radius);
       background: none; border: 1px solid transparent;
       transition: background var(--ease), color var(--ease);
     }
@@ -101,7 +101,7 @@
     .nav-btn-primary {
       font-size: 14px; font-weight: 500;
       background: var(--navy); color: #fff;
-      padding: 8px 18px; border-radius: var(--radius);
+      padding: 8px 20px; border-radius: var(--radius);
       border: none; transition: background var(--ease);
     }
     .nav-btn-primary:hover { background: var(--navy3); }

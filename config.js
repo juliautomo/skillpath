@@ -159,9 +159,14 @@ document.addEventListener('DOMContentLoaded', function() {
   var courseIds = [1, 2, 3, 4];
   var courseTitles = ['Excel & Google Sheets Mastery','SQL for Data Analysis','Python for Data (pandas)','Data Visualization & Dashboards'];
   var coursePrices = [790000, 1099000, 1399000, 1249000];
+  var COMING_SOON_IDS = [2, 3, 4];
   enrollBtns.forEach(function(btn, i) {
     btn.id = 'enroll-btn-' + courseIds[i];
-    btn.onclick = function() { skillpathBuy(courseIds[i], courseTitles[i], coursePrices[i]); };
+    if (COMING_SOON_IDS.indexOf(courseIds[i]) !== -1) {
+      btn.outerHTML = '<span id="enroll-btn-' + courseIds[i] + '" style="display:inline-flex;align-items:center;gap:5px;color:#8A8A8A;font-size:12px;font-weight:500"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Coming Soon</span>';
+    } else {
+      btn.onclick = function() { skillpathBuy(courseIds[i], courseTitles[i], coursePrices[i]); };
+    }
   });
 
   // Sync any pending payments (in case the Midtrans webhook hasn't fired yet),
@@ -188,6 +193,8 @@ function loadEnrollments(tok) {
 }
 
 function markEnrolled(id) {
+  var COMING_SOON_IDS = [2, 3, 4];
+  if (COMING_SOON_IDS.indexOf(id) !== -1) return; // don't override Coming Soon label
   var btn = document.getElementById('enroll-btn-'+id);
   if (btn) btn.outerHTML = '<span style="color:#16a34a;font-weight:600;font-size:13px">✓ Enrolled</span>';
 }

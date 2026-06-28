@@ -1373,18 +1373,12 @@ function renderGrid(courses) {
           ${c.enrolled ? `<div class="card-meta-item"><span class="card-meta-val">${c.progress}%</span><span class="card-meta-lbl">Complete</span></div>` : `<div class="card-meta-item"><span class="card-meta-val">Cert</span><span class="card-meta-lbl">Included</span></div>`}
         </div>
         <div class="card-footer" style="${c.comingSoon ? 'justify-content:flex-end' : ''}">
-          ${!c.comingSoon ? `<div>
-            <div class="card-price">${fmt(c)}</div>
-            <div class="card-price-alt">${fmtAlt(c)}</div>
-          </div>` : ''}
+          ${c.comingSoon ? '' : '<div><div class="card-price">' + fmt(c) + '</div><div class="card-price-alt">' + fmtAlt(c) + '</div></div>'}
           ${c.enrolled
-            ? `<button class="btn-continue" onclick="event.stopPropagation();window.location.href='lesson.html?course='+${JSON.stringify(c.slug)}">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Continue
-               </button>`
+            ? '<button class="btn-continue" onclick="event.stopPropagation();window.location.href=\'lesson.html?course=' + c.slug + '\'"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Continue</button>'
             : c.comingSoon
-              ? `<div class="coming-soon-overlay"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Coming Soon</div>`
-              : `<button class="btn-enroll" onclick="event.stopPropagation();skillpathBuy(${c.id}, '${c.title}', ${c.priceIdr})">Enroll →</button>`
+              ? '<div class="coming-soon-overlay"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Coming Soon</div>'
+              : '<button class="btn-enroll" onclick="event.stopPropagation();skillpathBuy(' + c.id + ',\'' + c.title + '\',' + c.priceIdr + ')">Enroll →</button>'
           }
         </div>
       </div>
@@ -1485,25 +1479,28 @@ function openModal(id) {
     </div>
   `;
 
-  // Footer
-  document.getElementById('modal-footer').innerHTML = `
-    ${!c.comingSoon ? `<div class="modal-footer-price">
-      <div>
-        <div class="modal-price-main" id="modal-price-main">${fmt(c)}</div>
-        <div class="modal-price-alt" id="modal-price-alt">${fmtAlt(c)}</div>
-      </div>
-      <span style="font-size:12px;color:var(--ink3)">One-time · Lifetime access</span>
-    </div>` : ''}
-    <div class="modal-footer-btns">
-      ${c.enrolled
-        ? `<button class="btn-modal-continue">Continue course →</button>`
-        : c.comingSoon
-          ? `<button class="btn-modal-enroll" disabled style="opacity:.5;cursor:not-allowed;width:100%">🔒 Coming Soon — stay tuned</button>`
-          : `<button class="btn-modal-preview" onclick="openPreview()">Preview</button>
-             <button class="btn-modal-enroll" onclick="event.stopPropagation();skillpathBuy(${c.id}, '${c.title}', ${c.priceIdr})">Enroll now →</button>`
-      }
-    </div>
-  `;
+  // Footer — build with concatenation to avoid nested template literal issues
+  var footerHTML = '';
+  if (!c.comingSoon) {
+    footerHTML += '<div class="modal-footer-price">' +
+      '<div>' +
+        '<div class="modal-price-main" id="modal-price-main">' + fmt(c) + '</div>' +
+        '<div class="modal-price-alt" id="modal-price-alt">' + fmtAlt(c) + '</div>' +
+      '</div>' +
+      '<span style="font-size:12px;color:var(--ink3)">One-time · Lifetime access</span>' +
+    '</div>';
+  }
+  footerHTML += '<div class="modal-footer-btns">';
+  if (c.enrolled) {
+    footerHTML += '<button class="btn-modal-continue">Continue course →</button>';
+  } else if (c.comingSoon) {
+    footerHTML += '<button class="btn-modal-enroll" disabled style="opacity:.5;cursor:not-allowed;width:100%">🔒 Coming Soon — stay tuned</button>';
+  } else {
+    footerHTML += '<button class="btn-modal-preview" onclick="openPreview()">Preview</button>';
+    footerHTML += '<button class="btn-modal-enroll" onclick="event.stopPropagation();skillpathBuy(' + c.id + ',\'' + c.title.replace(/'/g, "\\'") + '\',' + c.priceIdr + ')">Enroll now →</button>';
+  }
+  footerHTML += '</div>';
+  document.getElementById('modal-footer').innerHTML = footerHTML;
 
   // Animate progress bar after open
   document.getElementById('modal-overlay').classList.add('open');
@@ -1744,9 +1741,4 @@ applyFilters();
 
     // Sync enrollments from backend
     fetch('https://skillpath-production-4f85.up.railway.app/api/enrollments', {
-      headers: { Authorization: 'Bearer ' + token }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var enrolledIds = (data.courses || []).map(function(c) { return c.id; });
- 
+      headers: { Author

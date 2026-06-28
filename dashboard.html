@@ -718,6 +718,36 @@
       .stats-row { grid-template-columns: 1fr 1fr; }
       .topbar { padding: 0 20px; }
     }
+
+    /* ── Mobile menu bar ── */
+    .mobile-menubar {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--white);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    .mobile-menu-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+    }
+    .mobile-menu-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    @media (max-width: 900px) {
+      .mobile-menubar { display: flex; }
+    }
   </style>
 </head>
 <body>
@@ -743,7 +773,13 @@
 ════════════════════════════════════════════ -->
 <div class="main">
 
-  <!-- Top bar -->
+  <!-- Mobile menu bar -->
+  <div class="mobile-menubar" id="mobile-menubar">
+    <button id="menu-btn" class="mobile-menu-btn" aria-label="Toggle menu" onclick="document.getElementById('sidebar').classList.toggle('open')">
+      <svg viewBox="0 0 18 14" fill="none"><path d="M1 1h16M1 7h16M1 13h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <span class="mobile-menu-title">Dashboard</span>
+  </div>
 
   <!-- Content -->
   <main class="content" role="main">

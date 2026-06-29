@@ -199,6 +199,8 @@
 
     .page-wrap { margin-left: var(--sb-width); display: block; min-height: 100vh; transition: margin-left .2s; }
     body.sb-collapsed .page-wrap, html.sb-pre-collapsed .page-wrap { margin-left: 60px !important; }
+    /* These are inside page-wrap — sidebar.js adds margin to them too, cancel it */
+    body.sb-collapsed .page-header, body.sb-collapsed .track-bar { margin-left: 0 !important; }
     html.sb-pre-collapsed .sidebar { width: 60px !important; }
     @media (max-width: 900px) { .page-wrap { margin-left: 0; } }
     /* ── Page header ── */

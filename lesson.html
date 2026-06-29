@@ -267,17 +267,7 @@
     .btn-nav:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-l); }
     .btn-nav:disabled { opacity: .35; cursor: default; }
 
-    .btn-complete {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--accent); color: #fff;
-      border: none; border-radius: var(--radius);
-      padding: 9px 20px; font-size: 13px; font-weight: 500;
-      font-family: var(--sans); cursor: pointer;
-      transition: background var(--ease), transform .1s;
-    }
-    .btn-complete:hover { background: var(--accent2); }
-    .btn-complete:active { transform: scale(.97); }
-    .btn-complete.done { background: var(--bg3); color: var(--ink3); cursor: default; }
+
 
     /* ── Expert tip ───────────────────────────────────────────── */
     .tip-wrap {
@@ -1286,12 +1276,6 @@ function renderLesson(idx) {
             Previous
           </button>
 
-          <button class="btn-complete${isDone ? ' done' : ''}" id="btn-complete"
-            ${isDone ? 'disabled' : `onclick="markComplete(${idx})"`}>
-            ${isDone
-              ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Completed'
-              : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Mark as complete'}
-          </button>
 
           <button class="btn-nav" ${isLast ? 'disabled' : ''} onclick="navigate(${idx + 1})">
             Next
@@ -1350,12 +1334,8 @@ function renderLesson(idx) {
 
 /* ── Actions ─────────────────────────────────────────────────────── */
 async function markComplete(idx) {
-  if (!courseId) { toast('Enrollment error — please refresh', 'err'); return; }
-
-  const btn = document.getElementById('btn-complete');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
+  if (!courseId || !token) return;
+  if (completedSet.has(idx)) return; // already done
   try {
     const r = await fetch(`${API}/api/progress`, {
       method: 'POST',
@@ -1363,30 +1343,56 @@ async function markComplete(idx) {
       body: JSON.stringify({ course_id: courseId, lesson_index: idx }),
     });
     if (!r.ok) throw new Error();
-
     completedSet.add(idx);
+    renderLesson(idx); // refresh sidebar progress
     toast('Lesson complete!', 'ok');
-
-    // Re-render current lesson (updates button + progress)
-    renderLesson(idx);
-
-    // Auto-advance after 1.4 s if not last lesson
-    if (idx < flatLessons.length - 1) {
-      setTimeout(() => navigate(idx + 1), 1400);
-    }
   } catch {
-    toast('Could not save progress — try again', 'err');
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Mark as complete';
+    // silent — user can still navigate
   }
 }
 
-function navigate(idx) {
-  if (idx < 0 || idx >= flatLessons.length) return;
+function navigate(toIdx) {
+  if (toIdx < 0 || toIdx >= flatLessons.length) return;
+  // Auto-complete current lesson when navigating forward (covers placeholder/no-video lessons)
+  const curIdx = parseInt(new URL(location.href).searchParams.get('lesson') || '0');
+  if (toIdx > curIdx && !completedSet.has(curIdx)) {
+    markComplete(curIdx); // fire-and-forget
+  }
   const url = new URL(location.href);
   url.searchParams.set('course', courseSlug);
-  url.searchParams.set('lesson', idx);
+  url.searchParams.set('lesson', toIdx);
   location.href = url.toString();
+}
+
+/* ── YouTube IFrame API auto-complete at 80% ─────────────────────── */
+var _ytPlayer = null;
+var _ytInterval = null;
+var _ytChecked = false;
+
+function onYouTubeIframeAPIReady() {
+  const iframe = document.querySelector('.video-wrap iframe');
+  if (!iframe) return;
+  _ytPlayer = new YT.Player(iframe, {
+    events: {
+      onStateChange: function(e) {
+        if (e.data === YT.PlayerState.PLAYING && !_ytInterval) {
+          _ytInterval = setInterval(function() {
+            if (_ytChecked) { clearInterval(_ytInterval); return; }
+            try {
+              var dur = _ytPlayer.getDuration();
+              var cur = _ytPlayer.getCurrentTime();
+              if (dur > 0 && cur / dur >= 0.8) {
+                _ytChecked = true;
+                clearInterval(_ytInterval);
+                var curIdx = parseInt(new URL(location.href).searchParams.get('lesson') || '0');
+                markComplete(curIdx);
+              }
+            } catch(e2) {}
+          }, 2000);
+        }
+      }
+    }
+  });
 }
 
 function toast(msg, type = '') {
@@ -1399,5 +1405,6 @@ function toast(msg, type = '') {
 
 boot();
 </script>
+<script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>

@@ -1151,8 +1151,7 @@ async function boot() {
             panel.innerHTML = lessonAtts.map(function(a){
               var icon = a.file_type === 'pdf' ? '📄' : (a.file_type === 'xlsx' || a.file_type === 'xls') ? '📊' : '📎';
               var size = a.file_size ? (a.file_size > 1048576 ? (a.file_size/1048576).toFixed(1)+' MB' : Math.round(a.file_size/1024)+' KB') : '';
-              var safeName = a.display_name.replace(/[^a-zA-Z0-9._-]/g,'_');
-              var dlUrl = a.cloudinary_url.replace(/\/upload\//, '/upload/fl_attachment:'+safeName+'/');
+              var dlUrl = a.cloudinary_url.replace(/\/upload\//, '/upload/fl_attachment/');
               return '<a href="'+dlUrl+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px">'+
                 '<span style="font-size:16px">'+icon+'</span>'+
                 '<span style="flex:1">'+a.display_name+'<br><span style="font-size:11px;color:var(--ink3)">'+a.file_type.toUpperCase()+(size?' · '+size:'')+'</span></span>'+

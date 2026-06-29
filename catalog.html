@@ -1637,8 +1637,38 @@ function setCurrency(cur) {
 }
 
 /* ─────────────────────────────────────────
-   INIT
+   INIT — pre-populate enrolled state from cache before first render
 ───────────────────────────────────────── */
+(function() {
+  try {
+    var cached = localStorage.getItem('sp_enrollments');
+    var ts = parseInt(localStorage.getItem('sp_enrollments_ts') || '0');
+    if (cached && Date.now() - ts < 5 * 60 * 1000) {
+      var enrolledSlugs = (JSON.parse(cached).courses || []).map(function(c) { return c.slug; });
+      COURSES.forEach(function(c) {
+        if (enrolledSlugs.indexOf(c.slug) !== -1 || enrolledSlugs.indexOf(c.slug.replace(/-/g,'_')) !== -1) {
+          c.enrolled = true;
+        }
+      });
+    }
+  } catch(e) {}
+  // Also refresh from API in background and re-render if state changed
+  if (typeof getEnrollments === 'function') {
+    getEnrollments().then(function(data) {
+      if (!data) return;
+      var changed = false;
+      (data.courses || []).forEach(function(ec) {
+        COURSES.forEach(function(c) {
+          if (!c.enrolled && (c.slug === ec.slug || c.slug.replace(/-/g,'_') === ec.slug)) {
+            c.enrolled = true; changed = true;
+          }
+        });
+      });
+      if (changed) applyFilters();
+    }).catch(function(){});
+  }
+})();
+
 syncFilters();
 applyFilters();
 </script>

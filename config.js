@@ -146,6 +146,63 @@ function logout() {
 }
 
 
+/* ── Enrollment cache + pre-warm ────────────────────
+   Fires immediately on script parse (before DOMContentLoaded)
+   so Railway wakes up as early as possible on every page load.
+   getEnrollments() returns cached data instantly if fresh (<5 min),
+   otherwise awaits the in-flight pre-warm fetch.
+─────────────────────────────────────────────────── */
+var ENROLL_TTL = 5 * 60 * 1000; // 5 minutes
+var _enrollPromise = null;
+
+(function prewarm() {
+  var tok = localStorage.getItem('sp_token');
+  if (!tok) return;
+
+  // Cache fresh? Return immediately, refresh silently in background
+  try {
+    var cached = localStorage.getItem('sp_enrollments');
+    var ts = parseInt(localStorage.getItem('sp_enrollments_ts') || '0');
+    if (cached && Date.now() - ts < ENROLL_TTL) {
+      _enrollPromise = Promise.resolve(JSON.parse(cached));
+      // Background refresh keeps cache warm
+      fetch(API_BASE + '/api/enrollments', { headers: { Authorization: 'Bearer ' + tok } })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) {
+          if (d) {
+            localStorage.setItem('sp_enrollments', JSON.stringify(d));
+            localStorage.setItem('sp_enrollments_ts', String(Date.now()));
+          }
+        }).catch(function() {});
+      return;
+    }
+  } catch(e) {}
+
+  // Stale/no cache — fire real fetch (this also wakes Railway)
+  _enrollPromise = fetch(API_BASE + '/api/enrollments', {
+    headers: { Authorization: 'Bearer ' + tok }
+  }).then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) {
+      if (d) {
+        localStorage.setItem('sp_enrollments', JSON.stringify(d));
+        localStorage.setItem('sp_enrollments_ts', String(Date.now()));
+      }
+      return d;
+    }).catch(function() { return null; });
+})();
+
+/** Shared enrollment getter — reuses the pre-warm fetch or cache */
+function getEnrollments() {
+  if (_enrollPromise) return _enrollPromise;
+  var tok = localStorage.getItem('sp_token');
+  if (!tok) return Promise.resolve(null);
+  _enrollPromise = fetch(API_BASE + '/api/enrollments', {
+    headers: { Authorization: 'Bearer ' + tok }
+  }).then(function(r) { return r.ok ? r.json() : null; })
+    .catch(function() { return null; });
+  return _enrollPromise;
+}
+
 /* Payment additions */
 var API = 'https://skillpath-production-4f85.up.railway.app';
 
@@ -186,9 +243,8 @@ function syncPayments() {
 }
 
 function loadEnrollments(tok) {
-  fetch(API + '/api/enrollments', {headers:{Authorization:'Bearer '+tok}})
-    .then(function(r){return r.json();})
-    .then(function(d){(d.courses||[]).forEach(function(c){markEnrolled(c.id);});})
+  getEnrollments()
+    .then(function(d){ if (d) (d.courses||[]).forEach(function(c){ markEnrolled(c.id); }); })
     .catch(function(){});
 }
 

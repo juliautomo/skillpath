@@ -1155,35 +1155,14 @@ async function fetchEnrollments() {
   if (window.PREVIEW_MODE) {
     return { courses: [{ id: 1, slug: courseSlug, title: courseData?.title || 'Preview Course', progress_pct: 30 }] };
   }
-  // Serve from cache (<30 min) for instant load; refresh in background
+  // Delegate to config.js shared helper (pre-warmed, cached)
   try {
-    const cached = localStorage.getItem('sp_enrollments');
-    const ts = parseInt(localStorage.getItem('sp_enrollments_ts') || '0');
-    if (cached && Date.now() - ts < 30 * 60 * 1000) {
-      fetch(API + '/api/enrollments', { headers: { Authorization: 'Bearer ' + token } })
-        .then(r => r.ok ? r.json() : null)
-        .then(d => { if (d) { localStorage.setItem('sp_enrollments', JSON.stringify(d)); localStorage.setItem('sp_enrollments_ts', String(Date.now())); } })
-        .catch(() => {});
-      return JSON.parse(cached);
-    }
-  } catch(e) {}
-  // No valid cache — fetch with 15s timeout
-  try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 15000);
-    const r = await fetch(API + '/api/enrollments', { headers: { Authorization: 'Bearer ' + token }, signal: ctrl.signal });
-    clearTimeout(timer);
-    if (!r.ok) return null;
-    const d = await r.json();
-    localStorage.setItem('sp_enrollments', JSON.stringify(d));
-    localStorage.setItem('sp_enrollments_ts', String(Date.now()));
-    return d;
-  } catch(e) {
-    if (e.name === 'AbortError') {
+    const d = await getEnrollments();
+    if (!d) {
       document.getElementById('main-content').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:16px;color:var(--ink3)"><p style="font-size:15px;color:var(--ink)">Server is waking up</p><p style="font-size:13px">Please <a href="" onclick="location.reload();return false;" style="color:var(--accent)">refresh in 30 seconds</a>.</p></div>';
     }
-    return null;
-  }
+    return d;
+  } catch(e) { return null; }
 }
 
 async function fetchProgress() {

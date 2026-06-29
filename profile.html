@@ -800,7 +800,6 @@
 <script src="config.js"></script>
 <script>
 (function(){
-  var API='https://skillpath-production-4f85.up.railway.app';
   var token=localStorage.getItem('sp_token');
   var user=JSON.parse(localStorage.getItem('sp_user')||'null');
   if(!token||!user){window.location.href='index.html';return;}
@@ -831,13 +830,11 @@
   }
   document.getElementById('input-email').value=user.email;
   if(user.created_at){var d=new Date(user.created_at);document.getElementById('stat-joined').textContent=d.toLocaleDateString('en-GB',{month:'short',year:'numeric'});}
-  fetch(API+'/api/enrollments',{headers:{Authorization:'Bearer '+token}})
-    .then(function(r){return r.json();})
-    .then(function(data){
-      var courses=data.courses||[];
-      document.getElementById('stat-courses').textContent=courses.length;
-      document.getElementById('stat-lessons').textContent=courses.reduce(function(s,c){return s+parseInt(c.lessons_completed||0);},0);
-    }).catch(function(){});
+  getEnrollments().then(function(data){
+    var courses=(data&&data.courses)||[];
+    document.getElementById('stat-courses').textContent=courses.length;
+    document.getElementById('stat-lessons').textContent=courses.reduce(function(s,c){return s+parseInt(c.lessons_completed||0);},0);
+  }).catch(function(){});
 })();
 function handleAvatarUpload(event){
   var file=event.target.files[0];

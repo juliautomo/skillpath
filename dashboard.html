@@ -1015,7 +1015,6 @@
 
 <script>
 (async function() {
-  var API = 'https://skillpath-production-4f85.up.railway.app';
   var token = localStorage.getItem('sp_token');
   var user = JSON.parse(localStorage.getItem('sp_user') || 'null');
   var icons = {'excel-google-sheets':'📊','sql-data-analysis':'🗄️','sql-for-data-analysis':'🗄️','python-for-data':'🐍','data-visualization':'📈','data-visualization-dashboards':'📈'};
@@ -1042,23 +1041,17 @@
   // Sync payments silently in background so page renders immediately
   syncPayments();
 
-  // Load enrollments (with 15s timeout for Railway cold starts)
-  var ctrl = new AbortController();
-  var fetchTimer = setTimeout(function() {
-    ctrl.abort();
-    var wakeMsg = 'Server is waking up — <a href="" style="color:var(--accent)" onclick="location.reload();return false;">refresh in 30s</a>';
-    var errDiv = function(msg){ return '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">' + msg + '</div>'; };
-    var al = document.getElementById('assessment-list'); if (al) al.innerHTML = errDiv(wakeMsg);
-    var rl = document.getElementById('rec-list');        if (rl) rl.innerHTML = errDiv(wakeMsg);
-    var cl = document.querySelector('.enrolled-list');   if (cl) cl.innerHTML = errDiv(wakeMsg);
-    var sw = document.getElementById('welcome-sub');     if (sw) sw.textContent = 'Server is waking up — please refresh in 30 seconds.';
-  }, 15000);
-
-  fetch(API + '/api/enrollments', { headers: { Authorization: 'Bearer ' + token }, signal: ctrl.signal })
-    .then(function(r) { clearTimeout(fetchTimer); return r.json(); })
-    .then(function(data) {
-      // Cache enrollment data for instant lesson page loads
-      try { localStorage.setItem('sp_enrollments', JSON.stringify(data)); localStorage.setItem('sp_enrollments_ts', String(Date.now())); } catch(e) {}
+  // Load enrollments — uses pre-warmed cache from config.js (instant if <5 min old)
+  getEnrollments().then(function(data) {
+      if (!data) {
+        var wakeMsg = 'Server is waking up — <a href="" style="color:var(--accent)" onclick="location.reload();return false;">refresh in 30s</a>';
+        var errDiv = function(msg){ return '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px">' + msg + '</div>'; };
+        var al = document.getElementById('assessment-list'); if (al) al.innerHTML = errDiv(wakeMsg);
+        var rl = document.getElementById('rec-list');        if (rl) rl.innerHTML = errDiv(wakeMsg);
+        var cl = document.querySelector('.enrolled-list');   if (cl) cl.innerHTML = errDiv(wakeMsg);
+        var sw = document.getElementById('welcome-sub');     if (sw) sw.textContent = 'Server is waking up — please refresh in 30 seconds.';
+        return;
+      }
       var courses = data.courses || [];
 
       // ── Welcome section ──────────────────────────────

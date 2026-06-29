@@ -873,6 +873,19 @@
 </script>
 <div id="sidebar-root"></div>
 <script src="sidebar.js"></script>
+<script>
+  // Apply collapsed margin immediately to avoid flash
+  (function() {
+    var wrap = document.querySelector('.page-wrap');
+    if (!wrap) return;
+    var collapsed = localStorage.getItem('sb_collapsed') === '1';
+    wrap.style.marginLeft = collapsed ? '60px' : '240px';
+    // Sync when sidebar.js toggles
+    document.addEventListener('sb-toggle', function(e) {
+      wrap.style.marginLeft = e.detail.collapsed ? '60px' : '240px';
+    });
+  })();
+</script>
 
 <!-- ══════════════════════════════════════════
      PAGE HEADER

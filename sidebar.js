@@ -126,6 +126,7 @@
       toggleBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         var collapsed = document.body.classList.toggle('sb-collapsed');
+        document.dispatchEvent(new CustomEvent('sb-toggle', {detail:{collapsed:collapsed}}));
         localStorage.setItem('sb_collapsed', collapsed ? '1' : '');
         var icon = document.getElementById('sb-toggle-icon');
         if (icon) icon.style.transform = collapsed ? 'rotate(180deg)' : '';

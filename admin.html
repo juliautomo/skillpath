@@ -180,11 +180,14 @@ window.addEventListener("DOMContentLoaded",function(){
   var cachedMembers=cacheGet("adm_members",300000);
   if(cachedMembers){allMembers=cachedMembers;document.getElementById("members-count").textContent=allMembers.length+" members";renderMembers(allMembers);}
 
-  // Ping to wake Railway, then fetch real data
-  var wakeTimer=setTimeout(showWakeBanner, 3000);
-  fetch(API+"/")
-    .then(function(){clearTimeout(wakeTimer);hideWakeBanner();loadStats();loadMembers();})
-    .catch(function(){clearTimeout(wakeTimer);hideWakeBanner();loadStats();loadMembers();});
+  // Show cold-start banner if data takes >4s to load
+  var dataLoaded=false;
+  var wakeTimer=setTimeout(function(){if(!dataLoaded)showWakeBanner();},4000);
+  function onDataLoaded(){dataLoaded=true;clearTimeout(wakeTimer);hideWakeBanner();}
+
+  // Fetch data immediately — no pre-ping
+  loadStats();
+  loadMembers(onDataLoaded);
 });
 function switchTab(tab){
   document.getElementById("tab-members").style.display=tab==="members"?"block":"none";
@@ -205,7 +208,7 @@ function loadStats(){
     cacheSet("adm_stats",d);
   }).catch(function(){});
 }
-function loadMembers(){
+function loadMembers(cb){
   fetch(API+"/api/admin/members",{headers:{Authorization:"Bearer "+token}})
   .then(function(r){return r.json();})
   .then(function(d){
@@ -213,7 +216,11 @@ function loadMembers(){
     document.getElementById("members-count").textContent=allMembers.length+" members";
     renderMembers(allMembers);
     cacheSet("adm_members",allMembers);
-  }).catch(function(){document.getElementById("members-body").innerHTML="<div class=\"empty\">Failed to load.</div>";});
+    if(cb)cb();
+  }).catch(function(){
+    document.getElementById("members-body").innerHTML="<div class=\"empty\">Failed to load. <a href=\"javascript:location.reload()\" style=\"color:var(--accent)\">Retry</a></div>";
+    if(cb)cb();
+  });
 }
 function renderMembers(members){
   if(!members.length){document.getElementById("members-body").innerHTML="<div class=\"empty\">No members found.</div>";return;}

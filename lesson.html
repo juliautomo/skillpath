@@ -1135,6 +1135,10 @@ async function boot() {
             var wrap = document.querySelector('.video-wrap');
             if (wrap && !wrap.querySelector('iframe')) {
               wrap.innerHTML = '<iframe src="https://www.youtube.com/embed/' + curLes.youtubeId + '?rel=0&modestbranding=1" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+              // Reinit YT player now that iframe exists (API may have already fired)
+              _ytChecked = false;
+              _ytInterval = null;
+              if (window.YT && window.YT.Player) { onYouTubeIframeAPIReady(); }
             }
           }
           // Also expose lesson titles for admin modal

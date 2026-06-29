@@ -284,18 +284,24 @@ function loadCourses(){
   }).catch(function(){document.getElementById('courses-body').innerHTML='<div class="empty">Failed to load.</div>';});
 }
 
+var _modalAttachments={};
 function openModal(slug,title){
   currentSlug=slug;
+  _modalAttachments={};
   document.getElementById('modal-course-title').textContent=title;
   document.getElementById('modal-body').innerHTML='<div class="loading">Loading lessons...</div>';
   document.getElementById('modal-save-msg').textContent='';
   document.getElementById('course-modal').style.display='block';
-  fetch(API+'/api/admin/courses/'+slug+'/lessons',{headers:{Authorization:'Bearer '+token}})
-  .then(function(r){return r.json();})
-  .then(function(d){
+  Promise.all([
+    fetch(API+'/api/admin/courses/'+slug+'/lessons',{headers:{Authorization:'Bearer '+token}}).then(function(r){return r.json();}),
+    fetch(API+'/api/admin/courses/'+slug+'/attachments',{headers:{Authorization:'Bearer '+token}}).then(function(r){return r.json();})
+  ]).then(function(results){
     var stored={};
-    (d.lessons||[]).forEach(function(l){stored[l.lesson_index]=l.youtube_url||'';});
-    // Get lesson titles from page curriculum context (not available here, so use index labels)
+    (results[0].lessons||[]).forEach(function(l){stored[l.lesson_index]=l.youtube_url||'';});
+    (results[1].attachments||[]).forEach(function(a){
+      if(!_modalAttachments[a.lesson_index])_modalAttachments[a.lesson_index]=[];
+      _modalAttachments[a.lesson_index].push(a);
+    });
     renderModalLessons(stored);
   }).catch(function(){document.getElementById('modal-body').innerHTML='<div class="empty">Failed to load lesson data.</div>';});
 }
@@ -316,18 +322,90 @@ function renderModalLessons(stored){
 }
 
 function lessonRow(idx,title,url){
-  return '<div style="margin-bottom:14px">'+
-    '<div style="font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:4px">'+
+  var attachHtml='';
+  var atts=_modalAttachments[idx]||[];
+  atts.forEach(function(a){
+    var icon=a.file_type==='pdf'?'📄':a.file_type==='xlsx'||a.file_type==='xls'?'📊':'📎';
+    attachHtml+='<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:#f8fafc;border:1px solid var(--border);border-radius:5px;margin-top:4px">'+
+      '<span style="font-size:12px">'+icon+'</span>'+
+      '<span style="font-size:12px;color:var(--ink2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(a.display_name)+'</span>'+
+      '<button onclick="deleteAttachment('+a.id+','+idx+')" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;padding:2px 4px;flex-shrink:0">✕</button>'+
+    '</div>';
+  });
+  return '<div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #f1f5f9">'+
+    '<div style="font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:6px">'+
     '<span style="color:var(--ink3);font-family:var(--mono);margin-right:6px">'+(idx+1)+'.</span>'+
     (title||'Lesson '+(idx+1))+
     '</div>'+
     '<input type="text" data-idx="'+idx+'" value="'+escHtml(url)+'" placeholder="https://www.youtube.com/watch?v=... or leave blank" '+
-    'style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;font-size:12px;font-family:var(--mono);color:var(--ink);outline:none" '+
-    'onfocus="this.style.borderColor=var(--accent)" onblur="this.style.borderColor=var(--border)">'+
+    'style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;font-size:12px;font-family:var(--mono);color:var(--ink);outline:none;margin-bottom:6px">'+
+    '<div id="attach-list-'+idx+'">'+attachHtml+'</div>'+
+    '<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--accent);cursor:pointer;margin-top:4px">'+
+    '<input type="file" accept=".pdf,.xlsx,.xls,.docx,.pptx,.csv,.zip" style="display:none" onchange="uploadAttachment(this,'+idx+')">'+
+    '+ Attach file</label>'+
     '</div>';
 }
 
 function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
+
+var CLOUDINARY_CLOUD='deug6hjy4';
+var CLOUDINARY_PRESET='skillpath_attachments';
+
+function uploadAttachment(input,idx){
+  var file=input.files[0];
+  if(!file)return;
+  var label=input.parentElement;
+  label.textContent='Uploading…';
+  var fd=new FormData();
+  fd.append('file',file);
+  fd.append('upload_preset',CLOUDINARY_PRESET);
+  fd.append('resource_type','auto');
+  fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD+'/auto/upload',{method:'POST',body:fd})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.error){label.textContent='+ Attach file';alert('Upload failed: '+d.error.message);return;}
+    var ext=(file.name.split('.').pop()||'file').toLowerCase();
+    return fetch(API+'/api/admin/courses/'+currentSlug+'/attachments',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({lesson_index:idx,display_name:file.name,file_type:ext,cloudinary_url:d.secure_url,file_size:d.bytes})
+    }).then(function(r){return r.json();})
+    .then(function(saved){
+      if(!saved.ok){label.textContent='+ Attach file';return;}
+      if(!_modalAttachments[idx])_modalAttachments[idx]=[];
+      _modalAttachments[idx].push(saved.attachment);
+      // Re-render this lesson's attachment list
+      var listEl=document.getElementById('attach-list-'+idx);
+      if(listEl){
+        var a=saved.attachment;
+        var icon=a.file_type==='pdf'?'📄':a.file_type==='xlsx'||a.file_type==='xls'?'📊':'📎';
+        listEl.insertAdjacentHTML('beforeend','<div id="att-'+a.id+'" style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:#f8fafc;border:1px solid var(--border);border-radius:5px;margin-top:4px">'+
+          '<span style="font-size:12px">'+icon+'</span>'+
+          '<span style="font-size:12px;color:var(--ink2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(a.display_name)+'</span>'+
+          '<button onclick="deleteAttachment('+a.id+','+idx+')" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;padding:2px 4px;flex-shrink:0">✕</button>'+
+        '</div>');
+      }
+      // Reset label
+      var newLabel=document.createElement('label');
+      newLabel.style.cssText='display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--accent);cursor:pointer;margin-top:4px';
+      newLabel.innerHTML='<input type="file" accept=".pdf,.xlsx,.xls,.docx,.pptx,.csv,.zip" style="display:none" onchange="uploadAttachment(this,'+idx+')">+ Attach file';
+      label.replaceWith(newLabel);
+    });
+  }).catch(function(){label.textContent='+ Attach file';alert('Upload error. Try again.');});
+}
+
+function deleteAttachment(id,idx){
+  if(!confirm('Remove this attachment?'))return;
+  fetch(API+'/api/admin/attachments/'+id,{method:'DELETE',headers:{Authorization:'Bearer '+token}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.ok){
+      var el=document.getElementById('att-'+id);
+      if(el)el.remove();
+      if(_modalAttachments[idx])_modalAttachments[idx]=_modalAttachments[idx].filter(function(a){return a.id!==id;});
+    }
+  });
+}
 
 function closeModal(){
   document.getElementById('course-modal').style.display='none';

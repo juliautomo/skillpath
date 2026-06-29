@@ -14,3 +14,12 @@ router.get('/courses/:slug/lessons',async(req,res)=>{try{const{rows:cr}=await qu
 router.put('/courses/:slug/lessons',async(req,res)=>{try{const{rows:cr}=await query('SELECT id FROM courses WHERE slug=$1',[req.params.slug]);if(!cr.length)return res.status(404).json({error:'Course not found'});const courseId=cr[0].id;const lessons=req.body.lessons||[];for(const l of lessons){if(typeof l.lesson_index!=='number')continue;await query(`INSERT INTO lesson_content(course_id,lesson_index,youtube_url,updated_at) VALUES($1,$2,$3,NOW()) ON CONFLICT(course_id,lesson_index) DO UPDATE SET youtube_url=$3,updated_at=NOW()`,[courseId,l.lesson_index,l.youtube_url||null]);}res.json({ok:true,updated:lessons.length});}catch(err){res.status(500).json({error:'Internal server error'});}});
 
 module.exports=router;
+
+// GET /api/admin/courses/:slug/attachments
+router.get('/courses/:slug/attachments',async(req,res)=>{try{const{rows:cr}=await query('SELECT id FROM courses WHERE slug=$1',[req.params.slug]);if(!cr.length)return res.status(404).json({error:'Course not found'});const{rows}=await query('SELECT * FROM lesson_attachments WHERE course_id=$1 ORDER BY lesson_index,created_at ASC',[cr[0].id]);res.json({attachments:rows});}catch(err){res.status(500).json({error:'Internal server error'});}});
+
+// POST /api/admin/courses/:slug/attachments
+router.post('/courses/:slug/attachments',async(req,res)=>{try{const{rows:cr}=await query('SELECT id FROM courses WHERE slug=$1',[req.params.slug]);if(!cr.length)return res.status(404).json({error:'Course not found'});const{lesson_index,display_name,file_type,cloudinary_url,file_size}=req.body;if(typeof lesson_index!=='number'||!display_name||!cloudinary_url)return res.status(400).json({error:'Missing fields'});const{rows}=await query('INSERT INTO lesson_attachments(course_id,lesson_index,display_name,file_type,cloudinary_url,file_size) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',[cr[0].id,lesson_index,display_name,file_type||'file',cloudinary_url,file_size||null]);res.json({ok:true,attachment:rows[0]});}catch(err){res.status(500).json({error:'Internal server error'});}});
+
+// DELETE /api/admin/attachments/:id
+router.delete('/attachments/:id',async(req,res)=>{try{await query('DELETE FROM lesson_attachments WHERE id=$1',[req.params.id]);res.json({ok:true});}catch(err){res.status(500).json({error:'Internal server error'});}});

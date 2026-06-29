@@ -40,6 +40,16 @@ const initSchema = async () => {
       amount_idr INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'pending',
       midtrans_status TEXT, paid_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS lesson_attachments (
+      id SERIAL PRIMARY KEY,
+      course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+      lesson_index INTEGER NOT NULL,
+      display_name TEXT NOT NULL,
+      file_type TEXT NOT NULL,
+      cloudinary_url TEXT NOT NULL,
+      file_size INTEGER,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
     CREATE TABLE IF NOT EXISTS lesson_content (
       id SERIAL PRIMARY KEY,
       course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,

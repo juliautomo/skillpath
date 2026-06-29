@@ -5,4 +5,7 @@ router.get('/:slug',optionalAuth,async(req,res)=>{try{const{rows}=await query('S
 // GET /api/courses/:slug/lesson-content - public, returns stored youtube URLs per lesson index
 router.get('/:slug/lesson-content',async(req,res)=>{try{const{rows:cr}=await query('SELECT id FROM courses WHERE slug=$1 AND is_active=1',[req.params.slug]);if(!cr.length)return res.status(404).json({error:'Course not found'});const{rows}=await query('SELECT lesson_index,youtube_url FROM lesson_content WHERE course_id=$1',[cr[0].id]);res.json({lessons:rows});}catch(err){res.status(500).json({error:'Internal server error'});}});
 
+// GET /api/courses/:slug/attachments - public
+router.get('/:slug/attachments',async(req,res)=>{try{const{rows:cr}=await query('SELECT id FROM courses WHERE slug=$1 AND is_active=1',[req.params.slug]);if(!cr.length)return res.status(404).json({error:'Course not found'});const{rows}=await query('SELECT id,lesson_index,display_name,file_type,cloudinary_url,file_size FROM lesson_attachments WHERE course_id=$1 ORDER BY lesson_index,created_at ASC',[cr[0].id]);res.json({attachments:rows});}catch(err){res.status(500).json({error:'Internal server error'});}});
+
 module.exports=router;

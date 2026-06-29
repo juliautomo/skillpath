@@ -1110,40 +1110,60 @@ async function boot() {
   // ── 2. Render lesson content immediately (no Railway wait) ────────
   renderLesson(idx);
 
-  // ── 2b. Overlay stored YouTube URLs from backend (non-blocking) ───
+  // ── 2b. Overlay stored YouTube URLs + attachments from backend (non-blocking) ───
   (function() {
+    var curIdx = parseInt(new URL(location.href).searchParams.get('lesson') || '0');
     try {
-      fetch(API + '/api/courses/' + courseSlug + '/lesson-content')
-        .then(function(r){ return r.json(); })
-        .then(function(d){
-          var stored = {};
-          (d.lessons || []).forEach(function(l){
-            if (l.youtube_url) stored[l.lesson_index] = l.youtube_url;
-          });
-          // Apply to flatLessons
-          flatLessons.forEach(function(les, i){
-            if (stored[i]) {
-              var url = stored[i];
-              var ytId = url.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{11})/);
-              les.youtubeId = ytId ? ytId[1] : url;
-            }
-          });
-          // Re-render video area if current lesson now has an ID
-          var curIdx = parseInt(new URL(location.href).searchParams.get('lesson') || '0');
-          var curLes = flatLessons[curIdx];
-          if (curLes && curLes.youtubeId) {
-            var wrap = document.querySelector('.video-wrap');
-            if (wrap && !wrap.querySelector('iframe')) {
-              wrap.innerHTML = '<iframe src="https://www.youtube.com/embed/' + curLes.youtubeId + '?rel=0&modestbranding=1" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
-              // Reinit YT player now that iframe exists (API may have already fired)
-              _ytChecked = false;
-              _ytInterval = null;
-              if (window.YT && window.YT.Player) { onYouTubeIframeAPIReady(); }
-            }
+      Promise.all([
+        fetch(API + '/api/courses/' + courseSlug + '/lesson-content').then(function(r){ return r.json(); }),
+        fetch(API + '/api/courses/' + courseSlug + '/attachments').then(function(r){ return r.json(); })
+      ]).then(function(results){
+        // Apply YouTube URLs
+        var stored = {};
+        (results[0].lessons || []).forEach(function(l){
+          if (l.youtube_url) stored[l.lesson_index] = l.youtube_url;
+        });
+        flatLessons.forEach(function(les, i){
+          if (stored[i]) {
+            var url = stored[i];
+            var ytId = url.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{11})/);
+            les.youtubeId = ytId ? ytId[1] : url;
           }
-          // Also expose lesson titles for admin modal
-          window._adminLessons = flatLessons.map(function(l){ return {title:l.title}; });
-        }).catch(function(){});
+        });
+        // Re-render video if needed
+        var curLes = flatLessons[curIdx];
+        if (curLes && curLes.youtubeId) {
+          var wrap = document.querySelector('.video-wrap');
+          if (wrap && !wrap.querySelector('iframe')) {
+            wrap.innerHTML = '<iframe src="https://www.youtube.com/embed/' + curLes.youtubeId + '?rel=0&modestbranding=1" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+            _ytChecked = false; _ytInterval = null;
+            if (window.YT && window.YT.Player) { onYouTubeIframeAPIReady(); }
+          }
+        }
+        // Render attachments for current lesson
+        var allAtts = results[1].attachments || [];
+        var lessonAtts = allAtts.filter(function(a){ return a.lesson_index === curIdx; });
+        var panel = document.getElementById('resources-panel');
+        if (panel) {
+          if (!lessonAtts.length) {
+            panel.innerHTML = '<div style="font-size:12px;color:var(--ink3);text-align:center;padding:8px 0">No resources for this lesson yet</div>';
+          } else {
+            panel.innerHTML = lessonAtts.map(function(a){
+              var icon = a.file_type === 'pdf' ? '📄' : (a.file_type === 'xlsx' || a.file_type === 'xls') ? '📊' : '📎';
+              var size = a.file_size ? (a.file_size > 1048576 ? (a.file_size/1048576).toFixed(1)+' MB' : Math.round(a.file_size/1024)+' KB') : '';
+              return '<a href="'+a.cloudinary_url+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px">'+
+                '<span style="font-size:16px">'+icon+'</span>'+
+                '<span style="flex:1">'+a.display_name+'<br><span style="font-size:11px;color:var(--ink3)">'+a.file_type.toUpperCase()+(size?' · '+size:'')+'</span></span>'+
+                '<span style="font-size:11px;color:var(--accent)">↓</span></a>';
+            }).join('');
+          }
+        }
+        // Expose lesson titles for admin modal
+        window._adminLessons = flatLessons.map(function(l){ return {title:l.title}; });
+      }).catch(function(){
+        var panel = document.getElementById('resources-panel');
+        if (panel) panel.innerHTML = '<div style="font-size:12px;color:var(--ink3);text-align:center;padding:8px 0">No resources for this lesson yet</div>';
+      });
     } catch(e2) {}
   })();
 
@@ -1367,15 +1387,8 @@ function renderLesson(idx) {
           <div class="card-header">
             <div class="card-title">📎 Resources</div>
           </div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-            <a class="resource-item" href="#" onclick="return false" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px;opacity:.5;cursor:not-allowed">
-              <span style="font-size:16px">📄</span>
-              <span style="flex:1">Lesson notes — ${les.title}<br><span style="font-size:11px;color:var(--ink3)">PDF · Coming soon</span></span>
-            </a>
-            <a class="resource-item" href="#" onclick="return false" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px;opacity:.5;cursor:not-allowed">
-              <span style="font-size:16px">📊</span>
-              <span style="flex:1">Practice dataset<br><span style="font-size:11px;color:var(--ink3)">XLSX · Coming soon</span></span>
-            </a>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px" id="resources-panel">
+            <div style="font-size:12px;color:var(--ink3);text-align:center;padding:8px 0">Loading resources…</div>
           </div>
         </div>
       </div>

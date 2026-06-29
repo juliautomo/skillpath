@@ -60,9 +60,7 @@
       '</div>' +
     '</div>' +
     '<div id="sb-user-menu" style="display:none;position:fixed;bottom:80px;left:12px;width:216px;background:#1e293b;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:4px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.5)">' +
-      '<a href="profile.html" class="sb-menu-item">Profile</a>' +
-      '<a href="settings.html" class="sb-menu-item">Settings</a>' +
-      '<div style="height:1px;background:rgba(255,255,255,.08);margin:4px 0"></div>' +
+      '<div id="sb-user-menu-items"></div>' +
       '<button id="sb-logout-btn" class="sb-menu-item sb-menu-danger">Log out</button>' +
     '</div>' +
     '</aside>';
@@ -111,6 +109,16 @@
         } else { avatarEl.textContent = initials; }
       }
       if (nameEl) nameEl.textContent = parts[0];
+      // Build user menu based on role
+      var menuItems = document.getElementById('sb-user-menu-items');
+      if (menuItems) {
+        var role = (user.role || '').toLowerCase();
+        if (role === 'admin') {
+          menuItems.innerHTML = '<a href="admin.html" class="sb-menu-item">Admin</a><div style="height:1px;background:rgba(255,255,255,.08);margin:4px 0"></div>';
+        } else {
+          menuItems.innerHTML = '';
+        }
+      }
     }
   } catch(e) {}
 

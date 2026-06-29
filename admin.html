@@ -57,6 +57,9 @@ tr:hover td{background:#fafafa}
 .empty,.loading{text-align:center;padding:48px 24px;color:var(--ink3);font-size:13px}
 .access-denied{text-align:center;padding:80px 24px;display:none}
 .access-denied h2{font-size:20px;color:var(--navy);margin-bottom:8px}
+.wake-banner{display:none;align-items:center;gap:10px;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:10px 16px;margin-bottom:20px;font-size:13px;color:#92400e}
+.wake-spinner{width:14px;height:14px;border:2px solid #fde68a;border-top-color:#d97706;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -91,6 +94,7 @@ tr:hover td{background:#fafafa}
 <div class="container" id="main-content">
   <h1 class="page-title">Admin Dashboard</h1>
   <p class="page-sub">Manage members and monitor payments</p>
+  <div id="wake-banner" class="wake-banner"><div class="wake-spinner"></div><span>Connecting to server…</span></div>
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">Total Members</div><div class="stat-value" id="stat-members">—</div><div class="stat-sub">Registered students</div></div>
     <div class="stat-card"><div class="stat-label">Total Payments</div><div class="stat-value" id="stat-payments">—</div><div class="stat-sub">All transactions</div></div>
@@ -141,7 +145,47 @@ var token=localStorage.getItem("sp_token");
 var user=JSON.parse(localStorage.getItem("sp_user")||"null");
 var allMembers=[],allPayments=[];
 if(user)document.getElementById("admin-name").textContent=user.name;
-window.addEventListener("DOMContentLoaded",function(){if(user&&user.role==="admin"){loadStats();loadMembers();}});
+
+// Cold-start banner
+function showWakeBanner(){
+  var b=document.getElementById("wake-banner");
+  if(!b)return;
+  var secs=0;
+  b.style.display="flex";
+  var t=setInterval(function(){secs++;b.querySelector("span").textContent="Railway is waking up (free tier cold start)… "+secs+"s";if(secs>=90)clearInterval(t);},1000);
+  b._timer=t;
+}
+function hideWakeBanner(){
+  var b=document.getElementById("wake-banner");
+  if(!b)return;
+  if(b._timer)clearInterval(b._timer);
+  b.style.display="none";
+}
+
+// Cache helpers
+function cacheSet(k,v){try{localStorage.setItem(k,JSON.stringify({v:v,ts:Date.now()}));}catch(e){}}
+function cacheGet(k,ttl){try{var d=JSON.parse(localStorage.getItem(k)||"null");if(d&&(Date.now()-d.ts)<ttl)return d.v;}catch(e){}return null;}
+
+window.addEventListener("DOMContentLoaded",function(){
+  if(!(user&&user.role==="admin"))return;
+
+  // Show cached data instantly if available (5-min TTL)
+  var cachedStats=cacheGet("adm_stats",300000);
+  if(cachedStats){
+    document.getElementById("stat-members").textContent=cachedStats.total_members||0;
+    document.getElementById("stat-payments").textContent=cachedStats.total_payments||0;
+    document.getElementById("stat-enrollments").textContent=cachedStats.total_enrollments||0;
+    document.getElementById("stat-revenue").textContent="Rp "+fmtIDR(cachedStats.total_revenue_idr||0);
+  }
+  var cachedMembers=cacheGet("adm_members",300000);
+  if(cachedMembers){allMembers=cachedMembers;document.getElementById("members-count").textContent=allMembers.length+" members";renderMembers(allMembers);}
+
+  // Ping to wake Railway, then fetch real data
+  var wakeTimer=setTimeout(showWakeBanner, 3000);
+  fetch(API+"/")
+    .then(function(){clearTimeout(wakeTimer);hideWakeBanner();loadStats();loadMembers();})
+    .catch(function(){clearTimeout(wakeTimer);hideWakeBanner();loadStats();loadMembers();});
+});
 function switchTab(tab){
   document.getElementById("tab-members").style.display=tab==="members"?"block":"none";
   document.getElementById("tab-payments").style.display=tab==="payments"?"block":"none";
@@ -158,6 +202,7 @@ function loadStats(){
     document.getElementById("stat-payments").textContent=d.total_payments||0;
     document.getElementById("stat-enrollments").textContent=d.total_enrollments||0;
     document.getElementById("stat-revenue").textContent="Rp "+fmtIDR(d.total_revenue_idr||0);
+    cacheSet("adm_stats",d);
   }).catch(function(){});
 }
 function loadMembers(){
@@ -167,6 +212,7 @@ function loadMembers(){
     allMembers=d.members||[];
     document.getElementById("members-count").textContent=allMembers.length+" members";
     renderMembers(allMembers);
+    cacheSet("adm_members",allMembers);
   }).catch(function(){document.getElementById("members-body").innerHTML="<div class=\"empty\">Failed to load.</div>";});
 }
 function renderMembers(members){

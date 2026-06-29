@@ -1110,6 +1110,39 @@ async function boot() {
   // ── 2. Render lesson content immediately (no Railway wait) ────────
   renderLesson(idx);
 
+  // ── 2b. Overlay stored YouTube URLs from backend (non-blocking) ───
+  (function() {
+    try {
+      fetch(API + '/api/courses/' + courseSlug + '/lesson-content')
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          var stored = {};
+          (d.lessons || []).forEach(function(l){
+            if (l.youtube_url) stored[l.lesson_index] = l.youtube_url;
+          });
+          // Apply to flatLessons
+          flatLessons.forEach(function(les, i){
+            if (stored[i]) {
+              var url = stored[i];
+              var ytId = url.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{11})/);
+              les.youtubeId = ytId ? ytId[1] : url;
+            }
+          });
+          // Re-render video area if current lesson now has an ID
+          var curIdx = parseInt(new URL(location.href).searchParams.get('lesson') || '0');
+          var curLes = flatLessons[curIdx];
+          if (curLes && curLes.youtubeId) {
+            var wrap = document.querySelector('.video-wrap');
+            if (wrap && !wrap.querySelector('iframe')) {
+              wrap.innerHTML = '<iframe src="https://www.youtube.com/embed/' + curLes.youtubeId + '?rel=0&modestbranding=1" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+            }
+          }
+          // Also expose lesson titles for admin modal
+          window._adminLessons = flatLessons.map(function(l){ return {title:l.title}; });
+        }).catch(function(){});
+    } catch(e2) {}
+  })();
+
   // ── 3. Check enrollment in background, enable progress features ───
   if (!token) return; // not logged in — lesson visible, progress disabled
   try {

@@ -100,6 +100,7 @@ tr:hover td{background:#fafafa}
   <div class="tabs">
     <button class="tab active" onclick="switchTab('members')">Members</button>
     <button class="tab" onclick="switchTab('payments')">Payments</button>
+    <button class="tab" onclick="switchTab('courses')">Courses</button>
   </div>
   <div id="tab-members" class="table-card">
     <div class="table-header"><span class="table-title">Members</span><span class="table-count" id="members-count">Loading...</span></div>
@@ -110,6 +111,28 @@ tr:hover td{background:#fafafa}
     <div class="table-header"><span class="table-title">Payment History</span><span class="table-count" id="payments-count">Loading...</span></div>
     <div class="search-wrap"><input class="search-input" id="payments-search" type="text" placeholder="Search by name, email or order ID..." oninput="filterPayments()"></div>
     <div id="payments-body"><div class="loading">Loading payments...</div></div>
+  </div>
+  <div id="tab-courses" class="table-card" style="display:none">
+    <div class="table-header"><span class="table-title">Courses</span><span class="table-count" id="courses-count">—</span></div>
+    <div id="courses-body"><div class="loading">Loading courses...</div></div>
+  </div>
+
+  <!-- Course lesson editor modal -->
+  <div id="course-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.5);overflow-y:auto">
+    <div style="max-width:680px;margin:40px auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);background:var(--navy)">
+        <div>
+          <div style="font-size:15px;font-weight:600;color:#fff" id="modal-course-title">Edit Course</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">Paste YouTube URLs for each lesson</div>
+        </div>
+        <button onclick="closeModal()" style="background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:6px 12px;color:#fff;cursor:pointer;font-size:13px">✕ Close</button>
+      </div>
+      <div id="modal-body" style="padding:20px 24px;max-height:60vh;overflow-y:auto"></div>
+      <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <span id="modal-save-msg" style="font-size:13px;color:var(--green)"></span>
+        <button onclick="saveModal()" id="modal-save-btn" style="background:var(--navy);color:#fff;border:none;border-radius:var(--radius);padding:9px 22px;font-size:13px;font-weight:500;cursor:pointer">Save changes</button>
+      </div>
+    </div>
   </div>
 </div>
 <script>
@@ -122,8 +145,10 @@ window.addEventListener("DOMContentLoaded",function(){if(user&&user.role==="admi
 function switchTab(tab){
   document.getElementById("tab-members").style.display=tab==="members"?"block":"none";
   document.getElementById("tab-payments").style.display=tab==="payments"?"block":"none";
-  document.querySelectorAll(".tab").forEach(function(t,i){t.classList.toggle("active",(i===0&&tab==="members")||(i===1&&tab==="payments"));});
+  document.getElementById("tab-courses").style.display=tab==="courses"?"block":"none";
+  document.querySelectorAll(".tab").forEach(function(t,i){t.classList.toggle("active",(i===0&&tab==="members")||(i===1&&tab==="payments")||(i===2&&tab==="courses"));});
   if(tab==="payments"&&allPayments.length===0)loadPayments();
+  if(tab==="courses"&&!coursesLoaded)loadCourses();
 }
 function loadStats(){
   fetch(API+"/api/admin/stats",{headers:{Authorization:"Bearer "+token}})
@@ -182,6 +207,110 @@ function filterPayments(){
 }
 function fmtIDR(n){return parseInt(n).toLocaleString("id-ID");}
 function fmtDate(str){if(!str)return "—";var d=new Date(str);return d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});}
+var coursesLoaded=false;
+var currentSlug='';
+
+function loadCourses(){
+  fetch(API+'/api/admin/courses',{headers:{Authorization:'Bearer '+token}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    coursesLoaded=true;
+    var courses=d.courses||[];
+    document.getElementById('courses-count').textContent=courses.length+' courses';
+    if(!courses.length){document.getElementById('courses-body').innerHTML='<div class="empty">No courses found.</div>';return;}
+    var html='<table><thead><tr><th>Course</th><th>Lessons</th><th>Status</th><th></th></tr></thead><tbody>';
+    courses.forEach(function(c){
+      html+='<tr><td><strong style="color:var(--navy);font-size:13px">'+c.title+'</strong><div style="font-size:11px;color:var(--ink3);margin-top:2px;font-family:var(--mono)">'+c.slug+'</div></td>';
+      html+='<td>'+c.lesson_count+'</td>';
+      html+='<td><span class="badge '+(c.is_active?'badge-paid':'badge-failed')+'">'+(c.is_active?'Active':'Inactive')+'</span></td>';
+      html+='<td><button onclick="openModal(''+c.slug+'',''+c.title+'')" style="font-size:12px;padding:5px 14px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);cursor:pointer">Edit lessons</button></td>';
+      html+='</tr>';
+    });
+    html+='</tbody></table>';
+    document.getElementById('courses-body').innerHTML=html;
+  }).catch(function(){document.getElementById('courses-body').innerHTML='<div class="empty">Failed to load.</div>';});
+}
+
+function openModal(slug,title){
+  currentSlug=slug;
+  document.getElementById('modal-course-title').textContent=title;
+  document.getElementById('modal-body').innerHTML='<div class="loading">Loading lessons...</div>';
+  document.getElementById('modal-save-msg').textContent='';
+  document.getElementById('course-modal').style.display='block';
+  fetch(API+'/api/admin/courses/'+slug+'/lessons',{headers:{Authorization:'Bearer '+token}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    var stored={};
+    (d.lessons||[]).forEach(function(l){stored[l.lesson_index]=l.youtube_url||'';});
+    // Get lesson titles from page curriculum context (not available here, so use index labels)
+    renderModalLessons(stored);
+  }).catch(function(){document.getElementById('modal-body').innerHTML='<div class="empty">Failed to load lesson data.</div>';});
+}
+
+function renderModalLessons(stored){
+  // We embed lesson titles from the curriculum inline
+  var lessons=window._adminLessons||[];
+  var html='';
+  if(!lessons.length){
+    // fallback: numbered list
+    for(var i=0;i<36;i++){
+      html+=lessonRow(i,null,stored[i]||'');
+    }
+  } else {
+    lessons.forEach(function(l,i){html+=lessonRow(i,l.title,stored[i]||'');});
+  }
+  document.getElementById('modal-body').innerHTML=html;
+}
+
+function lessonRow(idx,title,url){
+  return '<div style="margin-bottom:14px">'+
+    '<div style="font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:4px">'+
+    '<span style="color:var(--ink3);font-family:var(--mono);margin-right:6px">'+(idx+1)+'.</span>'+
+    (title||'Lesson '+(idx+1))+
+    '</div>'+
+    '<input type="text" data-idx="'+idx+'" value="'+escHtml(url)+'" placeholder="https://www.youtube.com/watch?v=... or leave blank" '+
+    'style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;font-size:12px;font-family:var(--mono);color:var(--ink);outline:none" '+
+    'onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">'+
+    '</div>';
+}
+
+function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
+
+function closeModal(){
+  document.getElementById('course-modal').style.display='none';
+  currentSlug='';
+}
+
+function saveModal(){
+  var inputs=document.getElementById('modal-body').querySelectorAll('input[data-idx]');
+  var lessons=[];
+  inputs.forEach(function(inp){
+    lessons.push({lesson_index:parseInt(inp.dataset.idx),youtube_url:inp.value.trim()});
+  });
+  var btn=document.getElementById('modal-save-btn');
+  var msg=document.getElementById('modal-save-msg');
+  btn.disabled=true;btn.textContent='Saving...';msg.textContent='';
+  fetch(API+'/api/admin/courses/'+currentSlug+'/lessons',{
+    method:'PUT',
+    headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+    body:JSON.stringify({lessons:lessons})
+  }).then(function(r){return r.json();})
+  .then(function(d){
+    btn.disabled=false;btn.textContent='Save changes';
+    if(d.ok){msg.textContent='✓ Saved';setTimeout(function(){msg.textContent='';},3000);}
+    else{msg.style.color='var(--red)';msg.textContent='Error saving';}
+  }).catch(function(){
+    btn.disabled=false;btn.textContent='Save changes';
+    msg.style.color='var(--red)';msg.textContent='Network error';
+  });
+}
+
+// Close modal on backdrop click
+document.addEventListener('click',function(e){
+  var modal=document.getElementById('course-modal');
+  if(modal&&modal.style.display!=='none'&&e.target===modal)closeModal();
+});
+
 function doLogout(){localStorage.removeItem("sp_token");localStorage.removeItem("sp_user");window.location.href="/index.html";}
 </script>
 </body>

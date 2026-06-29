@@ -861,6 +861,17 @@
       .track-step { min-width: 140px; }
     }
   </style>
+<script>
+  // Pre-render: apply collapsed state as CSS before paint
+  (function(){
+    if(localStorage.getItem('sb_collapsed')==='1'){
+      var s=document.createElement('style');
+      s.id='sb-pre-style';
+      s.textContent='.page-wrap{margin-left:60px!important}.sidebar{width:60px!important}';
+      document.head.appendChild(s);
+    }
+  })();
+</script>
 </head>
 <body>
 <script>
@@ -873,19 +884,7 @@
 </script>
 <div id="sidebar-root"></div>
 <script src="sidebar.js"></script>
-<script>
-  // Apply collapsed margin immediately to avoid flash
-  (function() {
-    var wrap = document.querySelector('.page-wrap');
-    if (!wrap) return;
-    var collapsed = localStorage.getItem('sb_collapsed') === '1';
-    wrap.style.marginLeft = collapsed ? '60px' : '240px';
-    // Sync when sidebar.js toggles
-    document.addEventListener('sb-toggle', function(e) {
-      wrap.style.marginLeft = e.detail.collapsed ? '60px' : '240px';
-    });
-  })();
-</script>
+
 
 <!-- ══════════════════════════════════════════
      PAGE HEADER
@@ -1524,5 +1523,16 @@
   }
 </script>
 <script src="config.js"></script>
+<script>
+  // Live update margin when sidebar toggles
+  (function(){
+    document.addEventListener('sb-toggle', function(e){
+      var wrap = document.querySelector('.page-wrap');
+      if(wrap) wrap.style.marginLeft = e.detail.collapsed ? '60px' : '240px';
+      var pre = document.getElementById('sb-pre-style');
+      if(pre) pre.parentNode.removeChild(pre);
+    });
+  })();
+</script>
 </body>
 </html>

@@ -198,7 +198,8 @@
     button { font-family: var(--sans); cursor: pointer; border: none; }
 
     .page-wrap { margin-left: var(--sb-width); display: block; min-height: 100vh; transition: margin-left .2s; }
-    body.sb-collapsed .page-wrap { margin-left: 60px; }
+    body.sb-collapsed .page-wrap, html.sb-pre-collapsed .page-wrap { margin-left: 60px; }
+    html.sb-pre-collapsed .sidebar { width: 60px; }
     @media (max-width: 900px) { .page-wrap { margin-left: 0; } }
     /* ── Page header ── */
     .page-header {
@@ -862,15 +863,7 @@
     }
   </style>
 <script>
-  // Pre-render: apply collapsed state as CSS before paint
-  (function(){
-    if(localStorage.getItem('sb_collapsed')==='1'){
-      var s=document.createElement('style');
-      s.id='sb-pre-style';
-      s.textContent='.page-wrap{margin-left:60px!important}.sidebar{width:60px!important}';
-      document.head.appendChild(s);
-    }
-  })();
+  if(localStorage.getItem('sb_collapsed')==='1') document.documentElement.classList.add('sb-pre-collapsed');
 </script>
 </head>
 <body>
@@ -1524,13 +1517,9 @@
 </script>
 <script src="config.js"></script>
 <script>
-  // Live update margin when sidebar toggles
   (function(){
     document.addEventListener('sb-toggle', function(e){
-      var wrap = document.querySelector('.page-wrap');
-      if(wrap) wrap.style.marginLeft = e.detail.collapsed ? '60px' : '240px';
-      var pre = document.getElementById('sb-pre-style');
-      if(pre) pre.parentNode.removeChild(pre);
+      document.documentElement.classList.toggle('sb-pre-collapsed', e.detail.collapsed);
     });
   })();
 </script>

@@ -230,7 +230,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // then load enrollments if logged in
   var tok = localStorage.getItem('sp_token');
   if (tok) {
-    syncPayments().then(function(){ loadEnrollments(tok); });
+    loadEnrollments(tok);        // instant — uses pre-warm cache
+    syncPayments();              // background — don't block enrollment UI
   }
 });
 
@@ -250,9 +251,9 @@ function loadEnrollments(tok) {
 
 function markEnrolled(id) {
   var COMING_SOON_IDS = [2, 3, 4];
-  if (COMING_SOON_IDS.indexOf(id) !== -1) return; // don't override Coming Soon label
+  if (COMING_SOON_IDS.indexOf(id) !== -1) return;
   var btn = document.getElementById('enroll-btn-'+id);
-  if (btn) btn.outerHTML = '<span style="color:#16a34a;font-weight:600;font-size:13px">✓ Enrolled</span>';
+  if (btn) btn.outerHTML = '<span id="enroll-btn-'+id+'" style="display:inline-flex;align-items:center;gap:6px;color:#16a34a;font-size:13px;font-weight:600"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="#16a34a"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Enrolled</span>';
 }
 
 

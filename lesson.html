@@ -1133,10 +1133,11 @@ async function boot() {
     // Now fetch progress
     const progR = await fetch(API + '/api/progress/' + courseId, { headers: { Authorization: 'Bearer ' + token } });
     const progressData2 = progR.ok ? await progR.json() : null;
+    window._progressFetched = true;
     if (progressData2?.completed_lessons) {
       progressData2.completed_lessons.forEach(i => completedSet.add(i));
-      renderLesson(idx); // re-render with real progress
     }
+    renderLesson(idx); // re-render with real progress
   } catch(e) {}
 }
 
@@ -1251,6 +1252,7 @@ function renderLesson(idx) {
   }).join('');
 
   const doneCount = flatLessons.filter((_, i) => completedSet.has(i)).length;
+  const progressLoaded = completedSet.size > 0 || window._progressFetched;
   const pct       = flatLessons.length ? Math.round((doneCount / flatLessons.length) * 100) : 0;
 
   document.getElementById('main-content').innerHTML = `
@@ -1288,7 +1290,7 @@ function renderLesson(idx) {
         <div class="card" style="margin-top:16px">
           <div class="card-header">
             <div class="card-title">Course lessons</div>
-            <div class="card-meta">${doneCount} / ${flatLessons.length}</div>
+            <div class="card-meta">${progressLoaded ? doneCount : '—'} / ${flatLessons.length}</div>
           </div>
           <div class="card-body">
             <div class="progress-row">

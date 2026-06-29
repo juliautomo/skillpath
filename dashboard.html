@@ -1115,8 +1115,12 @@
           container.innerHTML = '<div style="padding:24px;text-align:center;color:#7c7c9a;font-size:13px">No courses yet.<br><a href="catalog.html" style="color:#2563eb;margin-top:8px;display:inline-block">Browse courses →</a></div>';
         } else {
           var html = '';
+          // Override stale lesson_count with actual CURRICULUM totals
+          var COURSE_TOTALS = { 'excel-google-sheets': 36, 'excel_google_sheets': 36 };
           courses.forEach(function(c) {
-            var pct = c.progress_pct || 0;
+            var actualTotal = COURSE_TOTALS[c.slug] || c.lesson_count || 1;
+            var completedCount = c.lessons_completed || 0;
+            var pct = Math.round(completedCount / actualTotal * 100);
             var icon = icons[c.slug] || '📘';
             var status = pct >= 100 ? 'Complete' : pct > 0 ? 'In progress' : 'Not started';
             var statusColor = pct >= 100 ? '#16a34a' : pct > 0 ? '#2563eb' : '#7c7c9a';
@@ -1124,12 +1128,12 @@
               '<div class="enrolled-icon">' + icon + '</div>' +
               '<div class="enrolled-info">' +
                 '<div class="enrolled-title"><a href="lesson.html?course=' + c.slug + '" style="color:inherit;text-decoration:none;">' + c.title + '</a></div>' +
-                '<div class="enrolled-meta">' + c.lesson_count + ' lessons · ' + c.duration_weeks + ' weeks · Enrolled ' + fmtDate(c.enrolled_at) + '</div>' +
+                '<div class="enrolled-meta">' + actualTotal + ' lessons · ' + c.duration_weeks + ' weeks · Enrolled ' + fmtDate(c.enrolled_at) + '</div>' +
                 '<div style="height:4px;background:#f0f0f0;border-radius:2px;margin-top:8px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:#2563eb;border-radius:2px;transition:width .6s"></div></div>' +
               '</div>' +
               '<div class="enrolled-right">' +
                 '<div class="enrolled-pct" id="pct-' + c.id + '">' + pct + '%</div>' +
-                '<div class="enrolled-lessons" id="lessons-' + c.id + '">' + (c.lessons_completed||0) + '/' + c.lesson_count + '</div>' +
+                '<div class="enrolled-lessons" id="lessons-' + c.id + '">' + completedCount + '/' + actualTotal + '</div>' +
                 '<div class="enrolled-status" style="color:' + statusColor + ';font-size:11px;font-weight:600;margin-top:4px" id="status-' + c.id + '">' + status + '</div>' +
                 (pct < 100 ? '<a href="lesson.html?course=' + c.slug + '" class="btn-mark-complete" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">Continue →</a>' : '') +
               '</div>' +

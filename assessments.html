@@ -201,6 +201,7 @@
       background: var(--navy);
       padding: 56px 0 48px;
       position: relative; overflow: hidden;
+      margin-left: var(--sb-width);
     }
     .ph-grid {
       position: absolute; inset: 0;
@@ -269,6 +270,7 @@
     .track-bar {
       background: var(--white);
       border-bottom: 1px solid var(--border);
+      margin-left: var(--sb-width);
     }
     .track-bar-inner {
       max-width: 1200px; margin: 0 auto; padding: 0 32px;
@@ -844,7 +846,7 @@
     .mobile-menubar { display: none; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--white); position: sticky; top: 0; z-index: 30; }
     .mobile-menu-btn { background: none; border: none; cursor: pointer; padding: 4px; color: var(--ink); display: flex; align-items: center; }
     .mobile-menu-title { font-size: 15px; font-weight: 600; color: var(--navy); }
-    @media (max-width: 900px) { .mobile-menubar { display: flex; } .main { margin-left: 0; } }
+    @media (max-width: 900px) { .mobile-menubar { display: flex; } .main { margin-left: 0; } .page-header { margin-left: 0; } .track-bar { margin-left: 0; } }
 
     @media (max-width: 768px) {
       .main { padding: 24px 20px; }

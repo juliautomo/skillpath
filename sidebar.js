@@ -33,6 +33,7 @@
       '</div>' +
       '<span class="sb-logo-name">Skill<span>Path</span></span>' +
     '</a>' +
+    '<button class="sb-toggle" id="sb-toggle" title="Toggle sidebar"><svg id="sb-toggle-icon" viewBox="0 0 16 16" fill="none" style="width:14px;height:14px;transition:transform .2s"><path d="M10 3L6 8l4 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
     '<div class="sb-group">' +
       '<div class="sb-group-label">Main</div>' +
       navItem('dashboard.html',   'dashboard',   'Dashboard') +
@@ -72,7 +73,21 @@
 
   // Inject menu item styles
   var style = document.createElement('style');
-  style.textContent = '.sb-menu-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.8);font-size:13px;text-decoration:none;background:none;border:none;cursor:pointer;width:100%;text-align:left;box-sizing:border-box}.sb-menu-item:hover{background:rgba(255,255,255,.07)}.sb-menu-danger{color:rgba(255,100,100,.85)!important}';
+  style.textContent = '.sb-menu-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.8);font-size:13px;text-decoration:none;background:none;border:none;cursor:pointer;width:100%;text-align:left;box-sizing:border-box}.sb-menu-item:hover{background:rgba(255,255,255,.07)}.sb-menu-danger{color:rgba(255,100,100,.85)!important}'
+  + '.sb-toggle{position:absolute;right:-11px;top:68px;width:22px;height:22px;background:#1e293b;border:1px solid rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:60;transition:background .2s;flex-shrink:0}.sb-toggle:hover{background:#2d3f55}'
+  + 'body.sb-collapsed .sidebar{width:60px}'
+  + 'body.sb-collapsed .sb-logo-name{display:none}'
+  + 'body.sb-collapsed .sb-group-label{display:none}'
+  + 'body.sb-collapsed .sb-label{display:none}'
+  + 'body.sb-collapsed .sb-item{justify-content:center;padding:10px 0}'
+  + 'body.sb-collapsed .sb-icon{opacity:.7}'
+  + 'body.sb-collapsed .sb-item.active .sb-icon{opacity:1}'
+  + 'body.sb-collapsed .sb-user{justify-content:center;padding:10px 0}'
+  + 'body.sb-collapsed .sb-user-name,body.sb-collapsed .sb-user-role,body.sb-collapsed #sb-chevron,body.sb-collapsed .sb-progress-card{display:none}'
+  + 'body.sb-collapsed .sb-logo{justify-content:center;padding:20px 0}'
+  + 'body.sb-collapsed .main{margin-left:60px}'
+  + 'body.sb-collapsed .page-header{margin-left:60px}'
+  + 'body.sb-collapsed .track-bar{margin-left:60px}';
   document.head.appendChild(style);
 
   // Populate user info
@@ -95,6 +110,25 @@
       if (nameEl) nameEl.textContent = parts[0];
     }
   } catch(e) {}
+
+  // Sidebar collapse toggle
+  (function() {
+    if (localStorage.getItem('sb_collapsed') === '1') {
+      document.body.classList.add('sb-collapsed');
+      var icon = document.getElementById('sb-toggle-icon');
+      if (icon) icon.style.transform = 'rotate(180deg)';
+    }
+    var toggleBtn = document.getElementById('sb-toggle');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var collapsed = document.body.classList.toggle('sb-collapsed');
+        localStorage.setItem('sb_collapsed', collapsed ? '1' : '');
+        var icon = document.getElementById('sb-toggle-icon');
+        if (icon) icon.style.transform = collapsed ? 'rotate(180deg)' : '';
+      });
+    }
+  })();
 
   // Toggle dropdown
   var userBtn  = document.getElementById('sb-user-btn');

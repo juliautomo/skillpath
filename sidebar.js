@@ -74,7 +74,7 @@
   // Inject menu item styles
   var style = document.createElement('style');
   style.textContent = '.sb-menu-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.8);font-size:13px;text-decoration:none;background:none;border:none;cursor:pointer;width:100%;text-align:left;box-sizing:border-box}.sb-menu-item:hover{background:rgba(255,255,255,.07)}.sb-menu-danger{color:rgba(255,100,100,.85)!important}'
-  + '.sb-toggle{position:absolute;right:10px;top:14px;width:22px;height:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:60;transition:background .2s;flex-shrink:0}.sb-toggle:hover{background:rgba(255,255,255,.15)}'
+  + '.sb-toggle{position:absolute;left:38px;top:42px;width:20px;height:20px;background:var(--navy3);border:1.5px solid rgba(255,255,255,.25);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:60;transition:background .2s;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.4)}.sb-toggle:hover{background:#2d3f55}'
   + 'body.sb-collapsed .sidebar{width:60px}'
   + 'body.sb-collapsed .sb-logo-name{display:none}'
   + 'body.sb-collapsed .sb-group-label{display:none}'

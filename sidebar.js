@@ -87,7 +87,10 @@
   + 'body.sb-collapsed .sb-logo{justify-content:center;padding:20px 0}'
   + 'body.sb-collapsed .main{margin-left:60px}'
   + 'body.sb-collapsed .page-header{margin-left:60px}'
-  + 'body.sb-collapsed .track-bar{margin-left:60px}';
+  + 'body.sb-collapsed .track-bar{margin-left:60px}'
+  + 'body.sb-collapsed .page-wrap{margin-left:60px}'
+  + '.sidebar{transition:width .2s}'
+  + '.main,.page-header,.track-bar,.page-wrap{transition:margin-left .2s}';
   document.head.appendChild(style);
 
   // Populate user info

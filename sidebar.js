@@ -39,6 +39,8 @@
       navItem('catalog.html',     'catalog',     'Course Catalog') +
       navItem('assessments.html', 'assessments', 'Assessments') +
     '</div>' +
+    '<div class="sb-group" id="sb-my-courses" style="display:none">' +
+    '</div>' +
     '<div class="sb-group">' +
       '<div class="sb-group-label">Account</div>' +
       navItem('profile.html',  'profile',  'Profile') +
@@ -123,6 +125,46 @@
       window.location.href = 'index.html';
     }
   });
+
+  // My Courses section — populated from enrollment cache
+  function _slugToTitle(slug) {
+    return slug.replace(/[-_]/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+  }
+
+  function _renderMyCourses(courses) {
+    var groupEl = document.getElementById('sb-my-courses');
+    if (!groupEl || !courses || !courses.length) return;
+    var courseIcon = '<svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="white" stroke-width="1.4"/><path d="M5 6h6M5 9h4" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>';
+    var items = courses.map(function(c) {
+      var slug = c.slug || '';
+      var title = c.title || _slugToTitle(slug);
+      var active = (window.location.search.indexOf('course=' + slug) !== -1) ? ' active' : '';
+      return '<a href="lesson.html?course=' + slug + '" class="sb-item' + active + '">' +
+        '<div class="sb-icon">' + courseIcon + '</div>' +
+        '<span class="sb-label" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + title + '</span>' +
+        '</a>';
+    }).join('');
+    groupEl.innerHTML = '<div class="sb-group-label">My Courses</div>' + items;
+    groupEl.style.display = '';
+  }
+
+  try {
+    var _tok = localStorage.getItem('sp_token');
+    if (_tok) {
+      // Populate immediately from cache
+      var _cached = localStorage.getItem('sp_enrollments');
+      if (_cached) {
+        var _data = JSON.parse(_cached);
+        _renderMyCourses(_data.courses || []);
+      }
+      // Then refresh via getEnrollments if available
+      if (typeof getEnrollments === 'function') {
+        getEnrollments().then(function(d) {
+          if (d && d.courses) _renderMyCourses(d.courses);
+        }).catch(function(){});
+      }
+    }
+  } catch(e2) {}
 
   // Mobile menu toggle: handled by onclick on #menu-btn in each page's HTML
 })();

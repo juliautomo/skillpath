@@ -876,8 +876,8 @@
     <div class="filter-group">
       <div class="filter-group-label">Track</div>
       <div class="filter-options">
-        <label class="filter-opt checked" data-filter="track" data-val="data-analytics">
-          <input type="checkbox" checked/>
+        <label class="filter-opt" data-filter="track" data-val="data-analytics">
+          <input type="checkbox"/>
           <div class="filter-check">
             <svg class="filter-check-tick" viewBox="0 0 8 6" fill="none"><path d="M1 3l2 2 4-4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
@@ -1263,7 +1263,7 @@ const COURSES = [
 ───────────────────────────────────────── */
 let currency    = 'usd';
 let activeCourse = null;
-let filters     = { level: [], track: ['data-analytics'], maxPrice: 100 };
+let filters     = { level: [], track: [], maxPrice: 100 };
 
 /* ─────────────────────────────────────────
    RENDER HELPERS
@@ -1595,9 +1595,7 @@ function resetFilters() {
     opt.classList.remove('checked');
     const cb = opt.querySelector('input'); if (cb) cb.checked = false;
   });
-  // Re-check the default track
-  const defaultTrack = document.querySelector('.filter-opt[data-val="data-analytics"]');
-  if (defaultTrack) { defaultTrack.classList.add('checked'); }
+
   document.getElementById('price-range').value = 100;
   document.getElementById('price-val').textContent = '$100';
   document.getElementById('search-input').value = '';

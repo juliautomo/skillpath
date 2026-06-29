@@ -707,7 +707,7 @@
     .modal-footer-price { display: flex; flex-direction: column; gap: 2px; }
     .modal-price-main { font-family: var(--mono); font-size: 28px; color: var(--navy); line-height: 1; }
     .modal-price-alt { font-size: 12px; color: var(--ink3); }
-    .modal-footer-btns { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+    .modal-footer-btns { display: flex; gap: 10px; align-items: stretch; flex-shrink: 0; }
     .btn-modal-enroll {
       flex: 1; font-size: 14px; font-weight: 500;
       background: var(--navy); color: #fff;
@@ -729,13 +729,14 @@
       font-size: 13px; font-weight: 400;
       background: none; color: var(--ink2);
       border: 1px solid var(--border2);
-      border-radius: var(--radius); padding: 13px 20px;
+      border-radius: var(--radius); padding: 0 20px;
+      display: flex; align-items: center;
       transition: border-color var(--ease), color var(--ease), background var(--ease);
     }
     .btn-modal-preview:hover { border-color: var(--border3); color: var(--ink); background: var(--bg); }
 
     /* Enrolled state in modal */
-    .enrolled-check { font-size: 13px; font-weight: 500; color: var(--accent); display: flex; align-items: center; gap: 6px; white-space: nowrap; padding: 13px 0; line-height: 1; }
+    .enrolled-check { font-size: 13px; font-weight: 500; color: var(--accent); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
     .enrolled-check svg { flex-shrink: 0; }
     .modal-enrolled-bar {
       background: var(--accent-l);

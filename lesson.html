@@ -1144,9 +1144,6 @@ async function boot() {
   const idx = Math.min(Math.max(lessonIdx, 0), flatLessons.length - 1);
 
   document.title = flatLessons[idx]?.title + ' · SkillPath';
-  document.getElementById('bc-course').textContent = courseData.title;
-  document.getElementById('bc-lesson').textContent = flatLessons[idx]?.title || 'Lesson';
-  document.getElementById('bc-course').href = 'catalog.html';
 
   // ── 2. Render lesson content immediately (no Railway wait) ────────
   renderLesson(idx);
@@ -1286,7 +1283,6 @@ function renderLesson(idx) {
   const isFirst  = idx === 0;
   const isLast   = idx === flatLessons.length - 1;
 
-  document.getElementById('bc-lesson').textContent = les.title;
   document.title = `${les.title} · SkillPath`;
 
   const videoHtml = les.youtubeId

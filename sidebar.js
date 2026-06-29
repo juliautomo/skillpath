@@ -118,6 +118,7 @@
   (function() {
     if (localStorage.getItem('sb_collapsed') === '1') {
       document.body.classList.add('sb-collapsed');
+      document.body.style.setProperty('--sb-width', '60px');
       var icon = document.getElementById('sb-toggle-icon');
       if (icon) icon.style.transform = 'rotate(180deg)';
     }
@@ -126,6 +127,7 @@
       toggleBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         var collapsed = document.body.classList.toggle('sb-collapsed');
+        document.body.style.setProperty('--sb-width', collapsed ? '60px' : '240px');
         document.dispatchEvent(new CustomEvent('sb-toggle', {detail:{collapsed:collapsed}}));
         localStorage.setItem('sb_collapsed', collapsed ? '1' : '');
         var icon = document.getElementById('sb-toggle-icon');

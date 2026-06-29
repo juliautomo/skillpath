@@ -1641,6 +1641,7 @@ function setCurrency(cur) {
    INIT — pre-populate enrolled state from cache before first render
 ───────────────────────────────────────── */
 (function() {
+  if (!localStorage.getItem('sp_token')) return; // skip if logged out
   try {
     var cached = localStorage.getItem('sp_enrollments');
     var ts = parseInt(localStorage.getItem('sp_enrollments_ts') || '0');

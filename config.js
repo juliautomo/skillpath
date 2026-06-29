@@ -157,7 +157,12 @@ var _enrollPromise = null;
 
 (function prewarm() {
   var tok = localStorage.getItem('sp_token');
-  if (!tok) return;
+  if (!tok) {
+    // Clear any stale enrollment cache on logout
+    localStorage.removeItem('sp_enrollments');
+    localStorage.removeItem('sp_enrollments_ts');
+    return;
+  }
 
   // Cache fresh? Return immediately, refresh silently in background
   try {

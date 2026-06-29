@@ -319,19 +319,19 @@
       border-color: rgba(26,107,74,.4);
       box-shadow: 0 6px 28px rgba(26,107,74,.1);
     }
-    /* Enrolled ribbon */
+    /* Enrolled badge */
     .enrolled-ribbon {
-      position: absolute; top: 14px; right: -28px;
-      background: var(--accent);
-      color: #fff;
-      font-size: 10px; font-weight: 500;
-      letter-spacing: .06em; text-transform: uppercase;
-      padding: 4px 36px;
-      transform: rotate(35deg);
-      box-shadow: 0 2px 8px rgba(26,107,74,.3);
       display: none;
+      align-items: center; gap: 5px;
+      position: absolute; top: 12px; right: 12px;
+      background: #f0faf4;
+      border: 1px solid #bbf7d0;
+      color: #16a34a;
+      font-size: 12px; font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
     }
-    .course-card.enrolled .enrolled-ribbon { display: block; }
+    .course-card.enrolled .enrolled-ribbon { display: inline-flex; }
 
     .card-accent-bar { height: 3px; }
     .bar-teal   { background: var(--accent); }
@@ -1308,7 +1308,7 @@ function renderGrid(courses) {
              onclick="openModal(${c.id})"
              tabindex="0"
              aria-label="${c.title}${c.enrolled ? ', enrolled' : ''}">
-      ${c.enrolled ? `<div class="enrolled-ribbon" aria-label="Enrolled">Enrolled</div>` : ''}
+      ${c.enrolled ? `<div class="enrolled-ribbon" aria-label="Enrolled"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="#16a34a"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Enrolled</div>` : ''}
       <div class="card-accent-bar ${c.bar}"></div>
       <div class="card-body">
         <div class="card-top">

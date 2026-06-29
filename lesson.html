@@ -1130,14 +1130,25 @@ async function boot() {
     courseId = enrolled.id;
     renderSidebarProgress(enrollData.courses);
 
-    // Now fetch progress
+    // Pre-populate from enrollment data immediately (fast, matches dashboard)
+    if (enrolled.lessons_completed > 0) {
+      // Seed completedSet with the first N indexes so count/pct match dashboard
+      for (let i = 0; i < Math.min(enrolled.lessons_completed, flatLessons.length); i++) {
+        completedSet.add(i);
+      }
+      window._progressFetched = true;
+      renderLesson(idx);
+    }
+
+    // Now fetch precise lesson-level progress and update
     const progR = await fetch(API + '/api/progress/' + courseId, { headers: { Authorization: 'Bearer ' + token } });
     const progressData2 = progR.ok ? await progR.json() : null;
     window._progressFetched = true;
     if (progressData2?.completed_lessons) {
+      completedSet.clear();
       progressData2.completed_lessons.forEach(i => completedSet.add(i));
     }
-    renderLesson(idx); // re-render with real progress
+    renderLesson(idx); // re-render with precise progress
   } catch(e) {}
 }
 

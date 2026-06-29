@@ -276,7 +276,7 @@ function loadCourses(){
       html+='<tr><td><strong style="color:var(--navy);font-size:13px">'+c.title+'</strong><div style="font-size:11px;color:var(--ink3);margin-top:2px;font-family:var(--mono)">'+c.slug+'</div></td>';
       html+='<td>'+c.lesson_count+'</td>';
       html+='<td><span class="badge '+(c.is_active?'badge-paid':'badge-failed')+'">'+(c.is_active?'Active':'Inactive')+'</span></td>';
-      html+='<td><button onclick="openModal(''+c.slug+'',''+c.title+'')" style="font-size:12px;padding:5px 14px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);cursor:pointer">Edit lessons</button></td>';
+      html+='<td><button data-slug="'+c.slug+'" data-title="'+c.title.replace(/"/g,'&quot;')+'" class="edit-course-btn" style="font-size:12px;padding:5px 14px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);cursor:pointer">Edit lessons</button></td>';
       html+='</tr>';
     });
     html+='</tbody></table>';
@@ -357,6 +357,12 @@ function saveModal(){
     msg.style.color='var(--red)';msg.textContent='Network error';
   });
 }
+
+// Delegated click for Edit lessons buttons
+document.addEventListener('click',function(e){
+  var btn=e.target.closest('.edit-course-btn');
+  if(btn)openModal(btn.dataset.slug,btn.dataset.title);
+});
 
 // Close modal on backdrop click
 document.addEventListener('click',function(e){

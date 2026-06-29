@@ -45,7 +45,7 @@
       --ease:      .2s ease;
     }
     html,body{height:100%;}
-    body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;display:flex;}
+    body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;display:block;}
     .sidebar {
       width: var(--sb-width);
       min-height: 100vh;
@@ -196,7 +196,7 @@
     a { color: inherit; text-decoration: none; }
     button { font-family: var(--sans); cursor: pointer; border: none; }
 
-    .page-wrap { margin-left: var(--sb-width); flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .page-wrap { margin-left: var(--sb-width); display: block; min-height: 100vh; }
     @media (max-width: 900px) { .page-wrap { margin-left: 0; } }
     /* ── Page header ── */
     .page-header {
@@ -872,17 +872,17 @@
 </script>
 <div id="sidebar-root"></div>
 <script src="sidebar.js"></script>
+
+<!-- ══════════════════════════════════════════
+     PAGE HEADER
+══════════════════════════════════════════ -->
+<div class="page-wrap">
 <div class="mobile-menubar">
   <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
   </button>
   <span class="mobile-menu-title">Assessments</span>
 </div>
-
-<!-- ══════════════════════════════════════════
-     PAGE HEADER
-══════════════════════════════════════════ -->
-<div class="page-wrap">
 <div class="page-header">
   <div class="ph-grid"></div>
   <div class="ph-glow1"></div>
